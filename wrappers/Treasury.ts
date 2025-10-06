@@ -1,4 +1,4 @@
-import { Address, beginCell, Cell, toNano, StateInit } from '@ton/core'
+import { Address, beginCell, Cell, toNano, StateInit, contractAddress } from '@ton/core'
 import { Contract, ContractProvider, Sender } from '@ton/core'
 
 // Import compiled contract code
@@ -27,17 +27,11 @@ export class Treasury implements Contract {
   }
 
   static async fromInit(owner: Address, upgradeAuthority: Address) {
-    const config: TreasuryConfig = {
-      owner: owner,
-      upgradeAuthority: upgradeAuthority
-    }
-    const data = treasuryConfigToCell(config)
+    // Use the generated contract's fromInit method which handles everything
+    const generatedContract = await TreasuryContract.fromInit(owner, upgradeAuthority)
     
-    // Use the compiled contract's init function to get code and data
-    const { code, data: initData } = await TreasuryContract.init(owner, upgradeAuthority)
-    
-    const init: StateInit = { code, data: initData }
-    return new Treasury(owner, init)
+    // Wrap it in our wrapper class
+    return new Treasury(generatedContract.address, generatedContract.init)
   }
 
   async sendOpenRoom(

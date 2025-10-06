@@ -1,4 +1,4 @@
-// automatically generated from `@stdlib/std/stdlib.fc` `E:/Ton/FaeArcade_old/contracts/Treasury.tact_Treasury.fc` 
+// automatically generated from `@stdlib/std/stdlib.fc` `E:/Ton/FaeArcade/FaeArcade-SmartContracts/contracts/Treasury.tact_Treasury.fc` 
 PROGRAM{
   DECLPROC __tact_context_get
   DECLPROC __tact_context_get_sender
