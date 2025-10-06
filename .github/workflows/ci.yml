@@ -1,0 +1,247 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build contracts
+      run: npm run build
+
+    - name: Run tests
+      run: npm test
+
+    - name: Run test coverage
+      run: npm run test:coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        fail_ci_if_error: false
+
+  security-audit:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run security audit
+      run: |
+        echo "🔒 Running security audit..."
+        echo "=================================="
+        
+        # Run full security audit
+        if npm audit; then
+          echo "✅ Security audit PASSED - No vulnerabilities found!"
+          echo "🎉 All dependencies are secure"
+        else
+          echo "❌ Security audit FAILED - Vulnerabilities found:"
+          npm audit
+          echo ""
+          echo "🚨 CI will fail due to security vulnerabilities"
+          exit 1
+        fi
+        
+        echo "=================================="
+        echo "📋 Security status: CLEAN"
+
+  contract-validation:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Validate contract structure
+      run: |
+        echo "🔍 Validating contract structure..."
+        
+        # Check if all required contract files exist
+        if [ ! -f "contracts/Treasury.tact" ]; then
+          echo "❌ Treasury.tact not found"
+          exit 1
+        fi
+        
+        if [ ! -f "contracts/counter.tact" ]; then
+          echo "❌ counter.tact not found"
+          exit 1
+        fi
+        
+        echo "✅ All contract files present"
+
+    - name: Validate script structure
+      run: |
+        echo "🔍 Validating script structure..."
+        
+        # Check if all required script files exist
+        required_scripts=("build.ts" "deploy.ts" "utils.ts")
+        
+        for script in "${required_scripts[@]}"; do
+          if [ ! -f "scripts/$script" ]; then
+            echo "❌ $script not found"
+            exit 1
+          fi
+        done
+        
+        echo "✅ All script files present"
+
+    - name: Validate test structure
+      run: |
+        echo "🔍 Validating test structure..."
+        
+        # Check if all required test files exist
+        required_tests=("treasury.paid.test.ts" "treasury.airdrop.test.ts" "treasury.test.ts" "counter.test.ts")
+        
+        for test in "${required_tests[@]}"; do
+          if [ ! -f "tests/$test" ]; then
+            echo "❌ $test not found"
+            exit 1
+          fi
+        done
+        
+        echo "✅ All test files present"
+
+    - name: Validate build output
+      run: |
+        echo "🔍 Validating build output..."
+        
+        # Run build to ensure contracts compile
+        npm run build
+        
+        # Check if build artifacts were created
+        if [ ! -f "build/build-info.json" ]; then
+          echo "❌ Build info not generated"
+          exit 1
+        fi
+        
+        echo "✅ Build output validated"
+
+  documentation:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check README exists
+      run: |
+        if [ ! -f "README.md" ]; then
+          echo "❌ README.md not found"
+          exit 1
+        fi
+        echo "✅ README.md present"
+
+    - name: Check documentation completeness
+      run: |
+        echo "🔍 Checking documentation completeness..."
+        
+        # Check if README contains key sections (with flexible matching)
+        if ! grep -q "Game Modes" README.md; then
+          echo "❌ Game Modes section missing from README"
+          exit 1
+        fi
+        
+        if ! grep -q "Mathematical Foundation" README.md; then
+          echo "❌ Mathematical Foundation section missing from README"
+          exit 1
+        fi
+        
+        if ! grep -q "Scripts Usage" README.md; then
+          echo "❌ Scripts Usage section missing from README"
+          exit 1
+        fi
+        
+        if ! grep -q "Safety Features" README.md; then
+          echo "❌ Safety Features section missing from README"
+          exit 1
+        fi
+        
+        echo "✅ All required documentation sections present"
+
+  final-status:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-audit, contract-validation, documentation]
+    if: always()
+
+    steps:
+    - name: Check job status
+      run: |
+        echo "🎯 CI Pipeline Status Summary"
+        echo "================================"
+        
+        if [ "${{ needs.build-and-test.result }}" == "success" ]; then
+          echo "✅ Build and Test: PASSED"
+        else
+          echo "❌ Build and Test: FAILED"
+        fi
+        
+        if [ "${{ needs.security-audit.result }}" == "success" ]; then
+          echo "✅ Security Audit: PASSED"
+        else
+          echo "❌ Security Audit: FAILED"
+        fi
+        
+        if [ "${{ needs.contract-validation.result }}" == "success" ]; then
+          echo "✅ Contract Validation: PASSED"
+        else
+          echo "❌ Contract Validation: FAILED"
+        fi
+        
+        if [ "${{ needs.documentation.result }}" == "success" ]; then
+          echo "✅ Documentation: PASSED"
+        else
+          echo "❌ Documentation: FAILED"
+        fi
+        
+        echo "================================"
+        
+        # Fail if any required job failed
+        if [ "${{ needs.build-and-test.result }}" != "success" ] || \
+           [ "${{ needs.contract-validation.result }}" != "success" ] || \
+           [ "${{ needs.documentation.result }}" != "success" ]; then
+          echo "❌ CI Pipeline failed"
+          exit 1
+        fi
+        
+        echo "🎉 CI Pipeline completed successfully!" 
