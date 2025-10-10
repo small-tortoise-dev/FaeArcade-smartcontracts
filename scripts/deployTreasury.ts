@@ -48,14 +48,8 @@ export async function run(provider: NetworkProvider) {
     console.log('Amount:', deploymentValue, 'nanoTON')
     console.log('To:', treasury.address.toString())
     
-    // Send deployment transaction directly using provider
-    await provider.sender().send({
-      to: treasury.address,
-      value: deploymentValue,
-      init: treasury.init,
-      body: beginCell().endCell(), // Empty body for deployment
-      bounce: false
-    })
+    // Send deployment transaction using provider.deploy (fixes TON Connect compatibility)
+    await provider.deploy(treasury, deploymentValue)
     
     console.log('\n✅ Deployment transaction sent!')
     console.log('Waiting for confirmation...')
