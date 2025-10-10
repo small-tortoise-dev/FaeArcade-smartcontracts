@@ -33,7 +33,9 @@
   },
   "dependencies": {
     "@tact-lang/compiler": "^1.6.13",
-    "ton-core": "^0.53.0"
+    "buffer": "^6.0.3",
+    "ton-core": "^0.53.0",
+    "vite-plugin-node-polyfills": "^0.24.0"
   },
   "packageManager": "pnpm@8.0.0"
 }
