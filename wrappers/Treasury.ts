@@ -1,4 +1,4 @@
-import { Address, beginCell, Cell, toNano, StateInit, contractAddress } from '@ton/core'
+import { Address, beginCell, Cell, toNano, StateInit } from '@ton/core'
 import { Contract, ContractProvider, Sender } from '@ton/core'
 
 // Import compiled contract code
@@ -37,11 +37,21 @@ export class Treasury implements Contract {
   async sendOpenRoom(
     provider: ContractProvider,
     via: Sender,
-    value: bigint = toNano('0.1')
+    value: bigint,
+    roomKey: number,
+    entryFee: bigint,
+    winnersCount: number
   ) {
+    const body = beginCell()
+      .storeUint(0, 32) // op code
+      .storeUint(roomKey, 32)
+      .storeCoins(entryFee)
+      .storeUint(winnersCount, 8)
+      .endCell()
+
     await provider.internal(via, {
       value,
-      body: beginCell().storeUint(0, 32).storeStringTail('open_room').endCell()
+      body
     })
   }
 
@@ -70,11 +80,21 @@ export class Treasury implements Contract {
   async sendPayoutPaid(
     provider: ContractProvider,
     via: Sender,
-    value: bigint = toNano('0.1')
+    value: bigint,
+    winners: Array<{ address: Address; weight: number }>
   ) {
+    const body = beginCell()
+      .storeUint(0, 32) // op code
+      .storeUint(winners.length, 8)
+
+    // Add winner addresses
+    for (const winner of winners) {
+      body.storeAddress(winner.address)
+    }
+
     await provider.internal(via, {
       value,
-      body: beginCell().storeUint(0, 32).storeStringTail('payout_paid').endCell()
+      body: body.endCell()
     })
   }
 
@@ -92,11 +112,28 @@ export class Treasury implements Contract {
   async sendPayoutAirdrop(
     provider: ContractProvider,
     via: Sender,
-    value: bigint = toNano('0.1')
+    value: bigint,
+    topScorerWinners: Address[],
+    streakWinners: Address[]
   ) {
+    const body = beginCell()
+      .storeUint(0, 32) // op code
+      .storeUint(topScorerWinners.length, 8)
+      .storeUint(streakWinners.length, 8)
+
+    // Add top scorer addresses
+    for (const address of topScorerWinners) {
+      body.storeAddress(address)
+    }
+
+    // Add streak winner addresses
+    for (const address of streakWinners) {
+      body.storeAddress(address)
+    }
+
     await provider.internal(via, {
       value,
-      body: beginCell().storeUint(0, 32).storeStringTail('payout_airdrop').endCell()
+      body: body.endCell()
     })
   }
 

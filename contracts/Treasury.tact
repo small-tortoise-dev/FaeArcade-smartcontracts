@@ -219,4 +219,4 @@ contract Treasury with Deployable {
     get fun getHouseFeeBps(): Int {
         return self.HOUSE_FEE_BPS;
     }
-} 
+}
