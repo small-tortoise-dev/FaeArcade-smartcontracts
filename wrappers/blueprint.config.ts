@@ -2,10 +2,6 @@ import { Blueprint } from '@ton/blueprint'
 
 export const config: Blueprint = {
   contracts: {
-    Counter: {
-      path: '../contracts/counter.tact',
-      output: '../contracts',
-    },
     Treasury: {
       path: '../contracts/Treasury.tact',
       output: '../contracts',

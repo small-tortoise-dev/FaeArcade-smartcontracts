@@ -15,7 +15,6 @@ try {
 
 // Compile contracts using Tact compiler
 const contracts = [
- 'contracts/counter.tact',
  'contracts/Treasury.tact'
 ];
 

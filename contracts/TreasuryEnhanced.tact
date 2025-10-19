@@ -140,7 +140,7 @@ contract TreasuryEnhanced with Deployable {
     // Enhanced airdrop payout with dynamic winner data
     receive("distribute_airdrop") {
         // Parse message body to get airdrop data
-        let slice = context().body.begin_parse();
+        let slice = my_tx().body.begin_parse();
         let op: Int = slice.preload_uint(32); // Operation code
         
         if (op == 0) {
