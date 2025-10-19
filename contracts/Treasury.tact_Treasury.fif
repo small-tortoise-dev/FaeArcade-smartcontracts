@@ -23,6 +23,7 @@ PROGRAM{
   DECLPROC $MessageParameters$_constructor_bounce_to_value_mode_body
   DECLPROC $Treasury$_fun_notify
   DECLPROC $DeployOk$_constructor_queryId
+  DECLPROC $SendParameters$_constructor_to_value_body_bounce
   DECLPROC $SendParameters$_constructor_to_value_body
   102025 DECLMETHOD %getOwner
   130873 DECLMETHOD %getUpgradeAuthority
@@ -240,6 +241,15 @@ PROGRAM{
   }>
   $DeployOk$_constructor_queryId PROCINLINE:<{
   }>
+  $SendParameters$_constructor_to_value_body_bounce PROCINLINE:<{
+    0 PUSHINT
+    s0 s4 XCHG
+    PUSHNULL
+    s0 s3 XCHG
+    s0 s4 XCHG
+    PUSHNULL
+    s2 s3 XCHG2
+  }>
   $SendParameters$_constructor_to_value_body PROCINLINE:<{
     0 PUSHINT
     PUSHNULL
@@ -383,34 +393,119 @@ PROGRAM{
       1 EQINT
       THROWANYIFNOT
       s5 PUSH
-      60262 PUSHINT
       __tact_context_get INLINECALLDICT
       $Context$_get_value INLINECALLDICT
-      ROT
-      EQUAL
-      THROWANYIFNOT
-      __tact_context_get INLINECALLDICT
-      $Context$_get_value INLINECALLDICT
-      s11 PUSH
-      MUL
-      s12 PUSH
-      DIV
-      __tact_context_get INLINECALLDICT
-      $Context$_get_value INLINECALLDICT
-      SWAP
-      SUB
-      s1 s3 XCHG
+      s1 s1 PUSH2
+      100000000 PUSHINT
       ADD
-      SWAP
+      s2 PUSH
+      20096 PUSHINT
+      s0 s3 XCHG
+      GEQ
+      s1 s2 XCHG
+      THROWANYIFNOT
+      OVER
+      63002 PUSHINT
+      s0 s2 XCHG
+      LEQ
+      THROWANYIFNOT
+      s1 s12 PUSH2
+      MUL
+      s14 PUSH
+      DIV
+      s2 s(-1) PUXC
+      SUB
+      s1 s5 XCHG
+      ADD
+      s0 s3 XCHG
       INC
+      s4 s4 XCHG2
+      SUB
+      DUP
+      0 GTINT
+      IF:<{
+        __tact_context_get_sender INLINECALLDICT
+            B{b5ee9c724101010100130000220000000045786365737320726566756e64bdb5887c} B>boc PUSHREF
+        s1 s2 XCHG
+        FALSE
+        $SendParameters$_constructor_to_value_body_bounce INLINECALLDICT
+            NEWC
+            b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+            1 STI               // store `bounce`
+            b{000} STSLICECONST // store bounced = false and src = addr_none
+            STSLICE             // store `to`
+            SWAP
+            STGRAMS             // store `value`
+            105 PUSHINT         // 1 + 4 + 4 + 64 + 32
+            STZEROES            // store currency_collection, ihr_fee, fwd_fee, created_lt and created_at
+            // → Stack state
+            // s0: Builder
+            // s1: `data`
+            // s2: `code`
+            // s3: `body`
+            // s4: `mode`
+            // Group 2: Placing the Builder after code and data, then checking those for nullability
+            s2 XCHG0
+            DUP2
+            ISNULL
+            SWAP
+            ISNULL
+            AND
+            // → Stack state
+            // s0: -1 (true) if `data` and `code` are both null, 0 (false) otherwise
+            // s1: `code`
+            // s2: `data`
+            // s3: Builder
+            // s4: `body`
+            // s5: `mode`
+            // Group 3: Left branch of the IFELSE, executed if s0 is -1 (true)
+            <{
+                DROP2 // drop `data` and `code`, since either of those is null
+                b{0} STSLICECONST
+            }> PUSHCONT
+            // Group 3: Right branch of the IFELSE, executed if s0 is 0 (false)
+            <{
+                // _ split_depth:(Maybe (## 5))
+                //   special:(Maybe TickTock)
+                //   code:(Maybe ^Cell)
+                //   data:(Maybe ^Cell)
+                //   library:(Maybe ^Cell)
+                // = StateInit;
+                ROT                // place message Builder on top
+                b{10} STSLICECONST // store Maybe = true, Either = false
+                // Start composing inlined StateInit
+                b{00} STSLICECONST // store split_depth and special first
+                STDICT             // store code
+                STDICT             // store data
+                b{0} STSLICECONST  // store library
+            }> PUSHCONT
+            // Group 3: IFELSE that does the branching shown above
+            IFELSE
+            // → Stack state
+            // s0: Builder
+            // s1: null or StateInit
+            // s2: `body`
+            // s3: `mode`
+            // Group 4: Finalizing the message
+            STDICT // store `body` as ref with an extra Maybe bit, since `body` might be null
+            ENDC
+            // → Stack state
+            // s0: Cell
+            // s1: `mode`
+            // Group 5: Sending the message, with `mode` on top
+            SWAP
+            SENDRAWMSG // https://github.com/tact-lang/tact/issues/1558
+      }>ELSE<{
+        DROP
+      }>
       s9 s11 XCHG
       s8 s10 XCHG
       s7 s9 XCHG
       s6 s8 XCHG
       s5 s7 XCHG
       s4 s6 XCHG
-      s0 s3 XCHG
-      s4 s5 XCHG2
+      s3 s5 XCHG
+      s0 s4 s3 XCHG3
       $Treasury$_contract_store INLINECALLDICT
     }>
     DUP

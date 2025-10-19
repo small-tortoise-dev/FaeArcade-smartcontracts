@@ -15,7 +15,8 @@ try {
 
 // Compile contracts using Tact compiler
 const contracts = [
- 'contracts/Treasury.tact'
+  'contracts/Treasury.tact',
+  'contracts/TreasuryComplete.tact'
 ];
 
 const compiledContracts: string[] = [];

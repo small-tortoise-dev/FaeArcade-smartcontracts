@@ -65,17 +65,35 @@ contract Treasury with Deployable {
         require(self.current_room_status == 1, "Room is not open");
         
         let entry_fee: Int = self.current_room_entry_fee;
+        let received_amount: Int = context().value;
         
-        // Validate entry fee using context().value
-        require(context().value == entry_fee, "Incorrect entry fee");
+        // Validate entry fee - allow for gas fees (minimum entry fee, maximum entry fee + 0.1 TON gas)
+        let min_gas_fee: Int = ton("0.05"); // Minimum gas fee
+        let max_gas_fee: Int = ton("0.1");  // Maximum gas fee
+        let min_required: Int = entry_fee;
+        let max_required: Int = entry_fee + max_gas_fee;
         
-        // Calculate house fee (2.5%)
-        let house_fee: Int = (context().value * self.HOUSE_FEE_BPS) / self.HOUSE_FEE_DENOMINATOR;
+        require(received_amount >= min_required, "Insufficient entry fee");
+        require(received_amount <= max_required, "Excessive payment amount");
         
-        // Add 97.5% to room pool
-        let pool_contribution: Int = context().value - house_fee;
+        // Calculate house fee (2.5%) based on entry fee only
+        let house_fee: Int = (entry_fee * self.HOUSE_FEE_BPS) / self.HOUSE_FEE_DENOMINATOR;
+        
+        // Add 97.5% to room pool (based on entry fee only)
+        let pool_contribution: Int = entry_fee - house_fee;
         self.current_room_pool = self.current_room_pool + pool_contribution;
         self.current_room_total_entries = self.current_room_total_entries + 1;
+        
+        // If user sent more than entry fee, refund the excess
+        let excess_amount: Int = received_amount - entry_fee;
+        if (excess_amount > 0) {
+            send(SendParameters{
+                to: context().sender,
+                value: excess_amount,
+                body: "Excess refund".asComment(),
+                bounce: false
+            });
+        }
     }
     
     // Close a room

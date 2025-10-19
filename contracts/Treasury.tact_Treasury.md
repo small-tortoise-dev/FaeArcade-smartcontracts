@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: Treasury
-BoC Size: 3167 bytes
+BoC Size: 3269 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 14
@@ -130,10 +130,11 @@ No arguments
 * 138: Not a basechain address
 * 5883: Room is not open
 * 16751: Room already paid
+* 20096: Insufficient entry fee
 * 27407: Room already exists
 * 50845: Room is not closed
-* 60262: Incorrect entry fee
 * 62631: Winners count mismatch
+* 63002: Excessive payment amount
 
 ## Trait inheritance diagram
 
