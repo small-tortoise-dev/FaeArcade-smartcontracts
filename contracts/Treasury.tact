@@ -105,46 +105,76 @@ contract Treasury with Deployable {
         self.current_room_status = 0; // Closed
     }
     
-    // Payout winners for paid rooms
+    // Payout winners for paid rooms using linear weighted distribution
     receive("payout_paid") {
         // Check if room exists and is closed but not paid
         require(self.current_room_status == 0, "Room is not closed");
         require(self.current_room_paid_hash == 0, "Room already paid");
         
-        // For now, use placeholder winners - in production this would parse msg body
-        let winners_count: Int = 3; // Placeholder
+        // Parse message body to get winner data
+        let msg_body: slice = context().body;
+        
+        // Skip op and query_id
+        msg_body~load_uint(32); // op
+        msg_body~load_uint(64); // query_id
+        
+        // Read winners count
+        let winners_count: Int = msg_body~load_uint(8);
         let expected_winners: Int = self.current_room_winners_count;
         require(winners_count == expected_winners, "Winners count mismatch");
         
-        // Placeholder payout logic - in production this would parse winners and weights
+        // Get room pool after 2.5% house fee
         let room_pool: Int = self.current_room_pool;
-        let payout_per_winner: Int = room_pool / winners_count;
         
-        // Placeholder winner addresses - in production these would come from msg body
-        let winner1: Address = address("EQD4FPq-PRDieyQKkizFTRtSDyucUIqrj0v_zXJmqaDp6_0t");
-        let winner2: Address = address("EQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqYENkWsIL0XggGG");
-        let winner3: Address = address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N");
+        // Calculate linear weighted distribution
+        let total_weight: Int = (winners_count * (winners_count + 1)) / 2; // W = N(N+1)/2
         
-        // Send payouts to winners
-        send(SendParameters{
-            to: winner1,
-            value: payout_per_winner,
-            body: "Payout".asComment()
-        });
-        send(SendParameters{
-            to: winner2,
-            value: payout_per_winner,
-            body: "Payout".asComment()
-        });
-        send(SendParameters{
-            to: winner3,
-            value: payout_per_winner,
-            body: "Payout".asComment()
-        });
+        // Process each winner
+        let i: Int = 0;
+        while (i < winners_count) {
+            // Read winner address (32 bytes)
+            let winner_address: Address = msg_body~load_address();
+            // Read winner amount (64 bits for nanoTON precision)
+            let winner_amount: Int = msg_body~load_coins();
+            
+            // Validate amount using linear weighted formula
+            let rank: Int = i + 1;
+            let expected_weight: Int = winners_count - i; // N - i + 1 (since i starts at 0)
+            let expected_amount: Int = (room_pool * expected_weight) / total_weight;
+            
+            require(winner_amount == expected_amount, "Invalid winner amount");
+            
+            // Send payout to winner
+            send(SendParameters{
+                to: winner_address,
+                value: winner_amount,
+                body: "Competition Payout".asComment()
+            });
+            
+            // Log payout event (emit for on-chain tracking)
+            emit("payout_executed", {
+                room_key: self.current_room_key,
+                winner_address: winner_address,
+                amount: winner_amount,
+                rank: rank,
+                weight: expected_weight
+            });
+            
+            i = i + 1;
+        }
         
-        // Mark room as paid
+        // Mark room as paid and reset pool
         self.current_room_status = 2; // Paid
-        self.current_room_paid_hash = 12345; // Placeholder hash
+        self.current_room_paid_hash = context().value; // Use transaction value as hash
+        self.current_room_pool = 0; // Reset pool balance
+        
+        // Emit final payout completion event
+        emit("payout_completed", {
+            room_key: self.current_room_key,
+            total_winners: winners_count,
+            total_distributed: room_pool,
+            tx_hash: context().value
+        });
     }
     
     // Fund the airdrop pool
@@ -194,6 +224,68 @@ contract Treasury with Deployable {
         
         // Reset airdrop pool
         self.airdrop_pool = 0;
+    }
+    
+    // Owner withdrawal - only owner can withdraw TON
+    receive("withdraw_owner") {
+        // Only owner can withdraw
+        require(context().sender == self.owner, "Only owner can withdraw");
+        
+        // Get withdrawal amount from message body
+        let msg_body: slice = context().body;
+        msg_body~load_uint(32); // Skip op
+        msg_body~load_uint(64); // Skip query_id
+        let withdrawal_amount: Int = msg_body~load_coins();
+        
+        // Check if contract has enough balance
+        let contract_balance: Int = myBalance();
+        require(withdrawal_amount <= contract_balance, "Insufficient contract balance");
+        
+        // Send TON to owner
+        send(SendParameters{
+            to: self.owner,
+            value: withdrawal_amount,
+            body: "Owner Withdrawal".asComment(),
+            bounce: false
+        });
+        
+        // Emit withdrawal event
+        emit("owner_withdrawal", {
+            amount: withdrawal_amount,
+            owner: self.owner,
+            remaining_balance: contract_balance - withdrawal_amount
+        });
+    }
+    
+    // Owner withdrawal - only owner can withdraw TON from contract
+    receive("withdraw_owner") {
+        // Only owner can withdraw
+        require(context().sender == self.owner, "Only owner can withdraw");
+        
+        // Get withdrawal amount from message body
+        let msg_body: slice = context().body;
+        msg_body~load_uint(32); // Skip op
+        msg_body~load_uint(64); // Skip query_id
+        let withdrawal_amount: Int = msg_body~load_coins();
+        
+        // Check if contract has enough balance
+        let contract_balance: Int = myBalance();
+        require(withdrawal_amount <= contract_balance, "Insufficient contract balance");
+        
+        // Send TON to owner
+        send(SendParameters{
+            to: self.owner,
+            value: withdrawal_amount,
+            body: "Owner Withdrawal".asComment(),
+            bounce: false
+        });
+        
+        // Emit withdrawal event
+        emit("owner_withdrawal", {
+            amount: withdrawal_amount,
+            owner: self.owner,
+            remaining_balance: contract_balance - withdrawal_amount
+        });
     }
     
     // Upgrade contract code
