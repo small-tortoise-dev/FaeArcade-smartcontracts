@@ -157,42 +157,79 @@ contract Treasury with Deployable {
     
     // Payout weekly airdrop
     receive("payout_airdrop") {
-        // Placeholder winner counts - in production this would parse msg body
-        let top_count: Int = 2;
-        let streak_count: Int = 1;
+        // Parse message body to get winner counts and addresses
+        let slice = context().body.begin_parse();
         
-        // Split airdrop pool 50/50
-        let half_pool: Int = self.airdrop_pool / 2;
+        // Read query_id (8 bytes) - skip for now, could be used for deduplication
+        let query_id: Int = slice.load_uint(64);
+        
+        // Read top_winners_count (1 byte)
+        let top_count: Int = slice.load_uint(8);
+        
+        // Read streak_winners_count (1 byte)
+        let streak_count: Int = slice.load_uint(8);
+        
+        // Validate counts
+        require(top_count >= 0 && top_count <= 100, "Invalid top winners count");
+        require(streak_count >= 0 && streak_count <= 100, "Invalid streak winners count");
+        require(top_count + streak_count > 0, "At least one winner required");
+        
+        // Validate airdrop pool has sufficient funds
+        require(self.airdrop_pool > 0, "Airdrop pool is empty");
+        
+        // Calculate total amount to distribute
+        let total_distributed: Int = 0;
         
         // Distribute to top winners
         if (top_count > 0) {
-            let top_per_winner: Int = half_pool / top_count;
-            let top_winner1: Address = address("EQD4FPq-PRDieyQKkizFTRtSDyucUIqrj0v_zXJmqaDp6_0t");
-            let top_winner2: Address = address("EQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqYENkWsIL0XggGG");
-            
-            send(SendParameters{
-                to: top_winner1,
-                value: top_per_winner,
-                body: "Top Winner Payout".asComment()
-            });
-            send(SendParameters{
-                to: top_winner2,
-                value: top_per_winner,
-                body: "Top Winner Payout".asComment()
-            });
+            let i: Int = 0;
+            while (i < top_count) {
+                let winner_address: Address = slice.load_address();
+                let winner_amount: Int = slice.load_uint(64);
+                
+                // Validate amount
+                require(winner_amount > 0, "Invalid winner amount");
+                require(winner_amount <= self.airdrop_pool, "Winner amount exceeds pool");
+                
+                // Send payout to winner
+                send(SendParameters{
+                    to: winner_address,
+                    value: winner_amount,
+                    body: "Top Winner Payout".asComment(),
+                    bounce: false
+                });
+                
+                total_distributed = total_distributed + winner_amount;
+                i = i + 1;
+            }
         }
         
         // Distribute to streak winners
         if (streak_count > 0) {
-            let streak_per_winner: Int = half_pool / streak_count;
-            let streak_winner: Address = address("EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N");
-        
-            send(SendParameters{
-                to: streak_winner,
-                value: streak_per_winner,
-                body: "Streak Winner Payout".asComment()
-            });
+            let i: Int = 0;
+            while (i < streak_count) {
+                let winner_address: Address = slice.load_address();
+                let winner_amount: Int = slice.load_uint(64);
+                
+                // Validate amount
+                require(winner_amount > 0, "Invalid winner amount");
+                require(winner_amount <= self.airdrop_pool, "Winner amount exceeds pool");
+            
+                // Send payout to winner
+                send(SendParameters{
+                    to: winner_address,
+                    value: winner_amount,
+                    body: "Streak Winner Payout".asComment(),
+                    bounce: false
+                });
+                
+                total_distributed = total_distributed + winner_amount;
+                i = i + 1;
+            }
         }
+        
+        // Validate total distribution doesn't exceed pool
+        require(total_distributed <= self.airdrop_pool, "Total distribution exceeds pool");
         
         // Reset airdrop pool
         self.airdrop_pool = 0;
@@ -224,6 +261,62 @@ contract Treasury with Deployable {
         // Placeholder upgrade logic
     }
     
+    // Test message parsing (for development/testing only)
+    receive("test_airdrop_parsing") {
+        // Parse message body to test parsing logic
+        let slice = context().body.begin_parse();
+        
+        // Read query_id (8 bytes)
+        let query_id: Int = slice.load_uint(64);
+        
+        // Read top_winners_count (1 byte)
+        let top_count: Int = slice.load_uint(8);
+        
+        // Read streak_winners_count (1 byte)
+        let streak_count: Int = slice.load_uint(8);
+        
+        // Log parsing results (in production, this would be handled differently)
+        // For now, we'll just validate the parsing worked
+        
+        // Validate counts
+        require(top_count >= 0 && top_count <= 100, "Invalid top winners count");
+        require(streak_count >= 0 && streak_count <= 100, "Invalid streak winners count");
+        require(top_count + streak_count > 0, "At least one winner required");
+        
+        // Test reading addresses and amounts
+        let total_test_amount: Int = 0;
+        
+        // Test top winners parsing
+        if (top_count > 0) {
+            let i: Int = 0;
+            while (i < top_count) {
+                let winner_address: Address = slice.load_address();
+                let winner_amount: Int = slice.load_uint(64);
+                total_test_amount = total_test_amount + winner_amount;
+                i = i + 1;
+            }
+        }
+        
+        // Test streak winners parsing
+        if (streak_count > 0) {
+            let i: Int = 0;
+            while (i < streak_count) {
+                let winner_address: Address = slice.load_address();
+                let winner_amount: Int = slice.load_uint(64);
+                total_test_amount = total_test_amount + winner_amount;
+                i = i + 1;
+            }
+        }
+        
+        // Send test result back to sender
+        send(SendParameters{
+            to: context().sender,
+            value: ton("0.01"), // Small amount to confirm parsing worked
+            body: "Test Parsing Success".asComment(),
+            bounce: false
+        });
+    }
+
     // Getter functions
     get fun getOwner(): Address {
         return self.owner;
