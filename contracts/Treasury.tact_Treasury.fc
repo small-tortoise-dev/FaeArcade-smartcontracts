@@ -229,19 +229,14 @@ slice __gen_slice_address_cbb03033e5a966afa569a7c7c33fcb94b4e64bae4db4fb5d0f73a5
     B{b5ee9c72410101010024000043801f029f57c7a21c4f6481524598a9a36a41e5738a115571e97ff9ae4cd5341d3d70ea7536c0} B>boc <s PUSHSLICE
 """;
 
+;; Cell xwrCrjGgQrT7q5953YBJDgmXG3cD/b9LhwrRQWJO4kU=
+cell __gen_cell_cell_c70ac2ae31a042b4fbab9f79dd80490e09971b7703fdbf4b870ad141624ee245() asm """
+    B{b5ee9c7241010101001800002c00000000436f6d7065746974696f6e205061796f7574d69956de} B>boc PUSHREF
+""";
+
 ;; EQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqYENkWsIL0XggGG
 slice __gen_slice_address_ee2a97158710dbe8fa1480e7c91162d6012ec7d68c8410902ad353a79c561373() asm """
     B{b5ee9c72410101010024000043800deb78cf30dc0c8612c3b3be0086724d499b25cb2fbbb154c086c8b58417a2f050104c69cb} B>boc <s PUSHSLICE
-""";
-
-;; EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N
-slice __gen_slice_address_58e2d2fc9446d00e70b3ad3ea1eb88797c323bae517f2527f807f62d09a56fdc() asm """
-    B{b5ee9c7241010101002400004380107bfaaa5cc6e5368e5f9799188bd798cd22e04ab16d1d8ea4fc37480741e6351064a3e1a6} B>boc <s PUSHSLICE
-""";
-
-;; Cell lZTQne01N/DtrHo86yAZsnIGiY3wdLhraFzqGXTlzFI=
-cell __gen_cell_cell_9594d09ded3537f0edac7a3ceb2019b27206898df074b86b685cea1974e5cc52() asm """
-    B{b5ee9c7241010101000c000014000000005061796f75741931a62c} B>boc PUSHREF
 """;
 
 ;; Cell kkzY+XNvE3vlc5uk/37HP7iMJvGReANhI9bsqNV1E3Y=
@@ -249,9 +244,19 @@ cell __gen_cell_cell_924cd8f9736f137be5739ba4ff7ec73fb88c26f19178036123d6eca8d57
     B{b5ee9c7241010101001700002a00000000546f702057696e6e6572205061796f7574333a3f4c} B>boc PUSHREF
 """;
 
+;; EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N
+slice __gen_slice_address_58e2d2fc9446d00e70b3ad3ea1eb88797c323bae517f2527f807f62d09a56fdc() asm """
+    B{b5ee9c7241010101002400004380107bfaaa5cc6e5368e5f9799188bd798cd22e04ab16d1d8ea4fc37480741e6351064a3e1a6} B>boc <s PUSHSLICE
+""";
+
 ;; Cell /VkXDtPvsoE9WqKn173a1ZYtKPy9DVaaP/nl0PEorQw=
 cell __gen_cell_cell_fd59170ed3efb2813d5aa2a7d7bddad5962d28fcbd0d569a3ff9e5d0f128ad0c() asm """
     B{b5ee9c7241010101001a0000300000000053747265616b2057696e6e6572205061796f75749bd61e1a} B>boc PUSHREF
+""";
+
+;; Cell m1iQqIuUB2ieAFHC+qAVdMOiBSFOZueQWaAx8MUOvDg=
+cell __gen_cell_cell_9b5890a88b9407689e0051c2faa01574c3a205214e66e79059a031f0c50ebc38() asm """
+    B{b5ee9c72410101010016000028000000004f776e6572205769746864726177616cb3c1be94} B>boc PUSHREF
 """;
 
 ;; Treasury.tact_Treasury.storage.fc
@@ -600,19 +605,21 @@ _ %getHouseFeeBps() method_id(123079) {
     if (text_op == 0xf23c37f73cab6a0fcf1f42d30f11c93ebbe3d3616094c478390d4ce10207c871) {
         throw_unless(50845, ($self'current_room_status == 0));
         throw_unless(16751, ($self'current_room_paid_hash == 0));
-        int $winners_count = 3;
-        int $expected_winners = $self'current_room_winners_count;
-        throw_unless(62631, ($winners_count == $expected_winners));
+        int $winners_count = $self'current_room_winners_count;
         int $room_pool = $self'current_room_pool;
-        int $payout_per_winner = ($room_pool / $winners_count);
-        slice $winner1 = __gen_slice_address_cbb03033e5a966afa569a7c7c33fcb94b4e64bae4db4fb5d0f73a5e3688d493d();
-        slice $winner2 = __gen_slice_address_ee2a97158710dbe8fa1480e7c91162d6012ec7d68c8410902ad353a79c561373();
-        slice $winner3 = __gen_slice_address_58e2d2fc9446d00e70b3ad3ea1eb88797c323bae517f2527f807f62d09a56fdc();
-        $global_send($SendParameters$_constructor_to_value_body($winner1, $payout_per_winner, __gen_cell_cell_9594d09ded3537f0edac7a3ceb2019b27206898df074b86b685cea1974e5cc52()));
-        $global_send($SendParameters$_constructor_to_value_body($winner2, $payout_per_winner, __gen_cell_cell_9594d09ded3537f0edac7a3ceb2019b27206898df074b86b685cea1974e5cc52()));
-        $global_send($SendParameters$_constructor_to_value_body($winner3, $payout_per_winner, __gen_cell_cell_9594d09ded3537f0edac7a3ceb2019b27206898df074b86b685cea1974e5cc52()));
+        int $total_weight = (($winners_count * ($winners_count + 1)) / 2);
+        int $i = 0;
+        while (($i < $winners_count)) {
+            slice $winner_address = __gen_slice_address_cbb03033e5a966afa569a7c7c33fcb94b4e64bae4db4fb5d0f73a5e3688d493d();
+            int $rank = ($i + 1);
+            int $expected_weight = ($winners_count - $i);
+            int $winner_amount = (($room_pool * $expected_weight) / $total_weight);
+            $global_send($SendParameters$_constructor_to_value_body($winner_address, $winner_amount, __gen_cell_cell_c70ac2ae31a042b4fbab9f79dd80490e09971b7703fdbf4b870ad141624ee245()));
+            $i = ($i + 1);
+        }
         $self'current_room_status = 2;
-        $self'current_room_paid_hash = 12345;
+        $self'current_room_paid_hash = $Context$_get_value(__tact_context_get());
+        $self'current_room_pool = 0;
         $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'current_room_key, $self'current_room_entry_fee, $self'current_room_winners_count, $self'current_room_status, $self'current_room_pool, $self'current_room_total_entries, $self'current_room_paid_hash, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
         return ();
     }
@@ -640,6 +647,16 @@ _ %getHouseFeeBps() method_id(123079) {
             $global_send($SendParameters$_constructor_to_value_body($streak_winner, $streak_per_winner, __gen_cell_cell_fd59170ed3efb2813d5aa2a7d7bddad5962d28fcbd0d569a3ff9e5d0f128ad0c()));
         }
         $self'airdrop_pool = 0;
+        $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'current_room_key, $self'current_room_entry_fee, $self'current_room_winners_count, $self'current_room_status, $self'current_room_pool, $self'current_room_total_entries, $self'current_room_paid_hash, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
+        return ();
+    }
+    ;; Receive "withdraw_owner" message
+    if (text_op == 0x7a30a75847a91ec28530dee9e62e368bbe2b319683b6acfe75a0c9337c8cc078) {
+        throw_unless(26825, ( equal_slices_bits(__tact_context_get_sender(), $self'owner) ));
+        int $withdrawal_amount = 1000000000;
+        int $contract_balance = $global_myBalance();
+        throw_unless(55591, ($withdrawal_amount <= $contract_balance));
+        $global_send($SendParameters$_constructor_to_value_body_bounce($self'owner, $withdrawal_amount, __gen_cell_cell_9b5890a88b9407689e0051c2faa01574c3a205214e66e79059a031f0c50ebc38(), false));
         $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'current_room_key, $self'current_room_entry_fee, $self'current_room_winners_count, $self'current_room_status, $self'current_room_pool, $self'current_room_total_entries, $self'current_room_paid_hash, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
         return ();
     }

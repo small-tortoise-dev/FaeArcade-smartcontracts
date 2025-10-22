@@ -195,7 +195,7 @@ contract TreasuryComplete with Deployable {
                 // Store reward for later claiming
                 let rewards_for_room: map<Address, Int>? = self.winner_rewards.get(room_key);
                 if (rewards_for_room == null) {
-                    let new_map: map<Address, Int> = empty_map<Address, Int>();
+                    let new_map: map<Address, Int> = empty_map();
                     new_map.set(winner_address, reward_amount);
                     self.winner_rewards.set(room_key, new_map);
                 } else {
