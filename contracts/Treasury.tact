@@ -50,7 +50,7 @@ contract Treasury with Deployable {
     receive("open_room") {
         // For text messages, create a default room with key 12345
         let room_key: Int = 12345;
-        let entry_fee: Int = ton("1.5"); // 1.5 TON entry fee
+        let entry_fee: Int = ton("1.0"); // 1.0 TON entry fee (matches frontend)
         let winners_count: Int = 100; // 100 winners
         
         // Validate parameters
@@ -85,7 +85,22 @@ contract Treasury with Deployable {
         
         // Get room data
         let room: RoomData? = self.rooms.get(default_room_key);
-        require(room != null, "Room not found");
+        
+        // If room doesn't exist, create it automatically with default parameters
+        if (room == null) {
+            let new_room: RoomData = RoomData{
+                entry_fee: ton("1.0"), // 1.0 TON entry fee
+                winners_count: 100, // 100 winners
+                status: 1, // Open
+                pool: 0,
+                total_entries: 0,
+                paid_hash: 0,
+                created_at: now(),
+                closed_at: 0
+            };
+            self.rooms.set(default_room_key, new_room);
+            room = new_room;
+        }
         
         let room_data: RoomData = room!!;
         require(room_data.status == 1, "Room is not open");

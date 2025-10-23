@@ -410,7 +410,7 @@ PROGRAM{
       DROP
       s2 POP
       12345 PUSHINT
-      1500000000 PUSHINT
+      1000000000 PUSHINT
       100 PUSHINT
       s5 PUSH
       257 PUSHINT
@@ -459,11 +459,31 @@ PROGRAM{
       s2 PUSH
       __tact_dict_get_int_cell INLINECALLDICT
       $RoomData$_load_opt INLINECALLDICT
-      14103 PUSHINT
-      OVER
+      DUP
       ISNULL
-      NOT
-      THROWANYIFNOT
+      IF:<{
+        DROP
+        1000000000 PUSHINT
+        100 PUSHINT
+        1 PUSHINT
+        0 PUSHINT
+        s0 s0 PUSH2
+            NOW
+        OVER
+        $RoomData$_constructor_entry_fee_winners_count_status_pool_total_entries_paid_hash_created_at_closed_at INLINECALLDICT
+        257 PUSHINT
+        s8 s7 s6 PUSH3
+        s8 s7 s6 PUSH3
+        s8 s7 PUSH2
+        NEWC
+        $RoomData$_store_cell INLINECALLDICT
+        s10 PUSH
+        s3 s15 XCHG
+        SWAP
+        __tact_dict_set_int_cell INLINECALLDICT
+        s0 s12 XCHG
+        $RoomData$_as_optional INLINECALLDICT
+      }>
       $RoomData$_not_null INLINECALLDICT
       5883 PUSHINT
       s6 PUSH
