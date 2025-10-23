@@ -522,7 +522,10 @@ PROGRAM{
     EQUAL
     IFJMP:<{
       DROP
-      12345 PUSHINT
+      __tact_context_get INLINECALLDICT
+      $Context$_get_raw INLINECALLDICT
+      32 LDU
+      DROP
       s4 PUSH
       257 PUSHINT
       s2 PUSH

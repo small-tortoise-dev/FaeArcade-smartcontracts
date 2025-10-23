@@ -600,11 +600,12 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
     }
     ;; Receive "enter_paid" message
     if (text_op == 0x1965172e995d3dfe36ccfac1fd31d9136f9e96ef54ab2dcf5e85043fc7c57a7e) {
-        int $default_room_key = 12345;
-        tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $default_room_key));
+        slice $slice = $Context$_get_raw(__tact_context_get());
+        int $room_key = $slice~load_uint(32);
+        tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
         if (null?($room)) {
             var ($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at) = $RoomData$_constructor_entry_fee_winners_count_status_pool_total_entries_paid_hash_created_at_closed_at(1000000000, 100, 1, 0, 0, 0, $global_now(), 0);
-            $self'rooms~__tact_dict_set_int_cell(257, $default_room_key, $RoomData$_store_cell(($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at), begin_cell()));
+            $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at), begin_cell()));
             $room = $RoomData$_as_optional(($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at));
         }
         var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
@@ -623,7 +624,7 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
         int $pool_contribution = ($room_data'entry_fee - $house_fee);
         $room_data'pool = ($room_data'pool + $pool_contribution);
         $room_data'total_entries = ($room_data'total_entries + 1);
-        $self'rooms~__tact_dict_set_int_cell(257, $default_room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
+        $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
         int $excess_amount = ($received_amount - $room_data'entry_fee);
         if (($excess_amount > 0)) {
             $global_send($SendParameters$_constructor_to_value_body_bounce(__tact_context_get_sender(), $excess_amount, __gen_cell_cell_c1c75eb884c9645193f2b58323ece7de629f4b631731640616f0fe82d137d2ed(), false));
