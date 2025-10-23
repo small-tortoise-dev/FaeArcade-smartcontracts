@@ -1,116 +1,90 @@
-import { toNano, Address, beginCell, StateInit } from '@ton/core'
+import { toNano, Address, beginCell } from '@ton/core'
 import { NetworkProvider } from '@ton/blueprint'
-import * as fs from 'fs'
-import * as path from 'path'
+import { Treasury } from '../wrappers/Treasury'
 
 export async function run(provider: NetworkProvider) {
-  console.log('🚀 Deploying Treasury Contract via Blueprint')
-  console.log('============================================')
+  console.log('🚀 Deploying FIXED Treasury Contract...')
+  console.log('=' .repeat(50))
   
   try {
     // Get deployer address
-    const deployer = provider.sender()?.address!
+    const deployerAddress = provider.sender().address
+    if (!deployerAddress) {
+      throw new Error('Wallet not connected')
+    }
+    const deployer = Address.parse(deployerAddress.toString())
+    
     console.log('✅ Wallet connected:')
-    console.log('Address:', deployer)
+    console.log('Address:', deployer.toString())
     console.log('Network: testnet')
     
-    // Check contract files
-    const contractDir = path.join(process.cwd(), 'contracts')
-    const codePath = path.join(contractDir, 'Treasury.tact_Treasury.code.boc')
+    // Use deployer as both owner and upgrade authority
+    const ownerAddress = deployer
+    const upgradeAuthorityAddress = deployer
     
-    if (!fs.existsSync(codePath)) {
-      console.log('❌ Contract code file not found')
-      console.log('Run: npm run build first')
-      return
-    }
-    
-    const code = fs.readFileSync(codePath)
-    console.log('✅ Contract code loaded:', code.length, 'bytes')
-    
-    // Create initial data for Treasury contract
-    const initialData = beginCell()
-      .storeAddress(Address.parse(deployer.toString())) // owner
-      .storeAddress(Address.parse(deployer.toString())) // upgrade_authority
-      .endCell()
+    // Create Treasury contract
+    const treasury = await Treasury.fromInit(ownerAddress, upgradeAuthorityAddress)
     
     console.log('\n📋 Contract Configuration:')
-    console.log('Owner:', deployer)
-    console.log('Upgrade Authority:', deployer)
-    console.log('Initial Balance: 1 TON')
+    console.log('Owner:', ownerAddress.toString())
+    console.log('Upgrade Authority:', upgradeAuthorityAddress.toString())
+    console.log('Contract Address:', treasury.address.toString())
     
-    // Create StateInit for deployment
-    const codeCell = beginCell().storeBuffer(code).endCell()
-    const stateInit: StateInit = {
-      code: codeCell,
-      data: initialData
-    }
+    console.log('\n🚀 Deploying FIXED contract...')
     
-    // Calculate contract address from StateInit
-    const contractAddress = contractAddressFromStateInit(stateInit)
+    // Deploy with 1.1 TON
+    await provider.deploy(treasury, toNano('1.1'))
     
-    console.log('\n🔧 Deployment Details:')
-    console.log('Contract Address:', contractAddress)
-    console.log('Code Size:', code.length, 'bytes')
-    console.log('Data Size:', initialData.bits.length, 'bits')
+    console.log('✅ Deployment transaction sent!')
+    console.log('⏳ Waiting for confirmation...')
     
-    console.log('\n📝 Starting deployment...')
-    console.log('1. ✅ Contract compiled')
-    console.log('2. ✅ Initial data created')
-    console.log('3. ✅ StateInit prepared')
-    console.log('4. 🚀 Executing deployment...')
+    // Wait for deployment
+    await provider.waitForDeploy(treasury.address)
     
-    // Execute deployment transaction
-    const deploymentValue = toNano('1.1') // 1 TON + gas
+    console.log('\n🎉 FIXED Treasury Contract Deployed Successfully!')
+    console.log('Contract Address:', treasury.address.toString())
+    console.log('Owner:', ownerAddress.toString())
+    console.log('Upgrade Authority:', upgradeAuthorityAddress.toString())
     
-    console.log('\n💸 Sending deployment transaction...')
-    console.log('Amount:', deploymentValue, 'nanoTON')
-    console.log('To:', contractAddress)
-    
-    // Send deployment transaction
-    await provider.sender().send({
-      to: contractAddress,
-      value: deploymentValue,
-      init: stateInit
-    })
-    
-    console.log('\n✅ Deployment transaction sent!')
-    console.log('Waiting for confirmation...')
-    
-    // Wait for deployment confirmation
-    await provider.waitForDeploy(contractAddress)
-    
-    console.log('\n🎉 Treasury Contract Deployed Successfully!')
-    console.log('Contract Address:', contractAddress)
-    console.log('Owner:', deployer)
-    console.log('Upgrade Authority:', deployer)
-    console.log('Initial Balance: 1 TON')
-    
-    // Save deployment info
     console.log('\n📝 Add to your .env file:')
-    console.log(`TREASURY_ADDRESS=${contractAddress}`)
+    console.log(`TREASURY_ADDRESS=${treasury.address.toString()}`)
     
     console.log('\n🔗 View on explorer:')
-    console.log(`https://testnet.tonscan.org/address/${contractAddress}`)
+    console.log(`https://testnet.tonscan.org/address/${treasury.address.toString()}`)
     
-    console.log('\n🧪 Test your contract:')
-    console.log('npm run test:contract')
+    console.log('\n✅ FIXES APPLIED:')
+    console.log('- Added default message handler for simple TON transfers')
+    console.log('- Contract now accepts 1.0 TON payments without message body')
+    console.log('- Automatic room creation for default room (12345)')
+    console.log('- Proper handling of excess amounts with refunds')
+    
+    // Update .env file
+    console.log('\n💾 Updating .env file...')
+    const fs = require('fs')
+    const path = require('path')
+    
+    const envPath = path.join(process.cwd(), '.env')
+    let envContent = ''
+    
+    if (fs.existsSync(envPath)) {
+      envContent = fs.readFileSync(envPath, 'utf8')
+    }
+    
+    // Remove existing treasury address
+    envContent = envContent.replace(/TREASURY_ADDRESS=.*\n/g, '')
+    
+    // Add new treasury address
+    envContent += `\n# Treasury Contract Address (FIXED VERSION)\n`
+    envContent += `TREASURY_ADDRESS=${treasury.address.toString()}\n`
+    
+    fs.writeFileSync(envPath, envContent)
+    console.log('✅ .env file updated with FIXED contract address')
     
   } catch (error: any) {
-    console.log('❌ Deployment failed:', error)
-    console.log('\n💡 Make sure you have:')
-    console.log('1. Testnet TON in your wallet (at least 1.1 TON)')
-    console.log('2. Correct mnemonic phrase in .env')
-    console.log('3. Valid TONCENTER_API_KEY')
-    
-    if (error.message && error.message.includes('insufficient balance')) {
-      console.log('\n💰 Get testnet TON from: @testgiver_ton_bot on Telegram')
-    }
+    console.error('❌ Deployment failed:', error)
+    console.log('\n🔧 Troubleshooting:')
+    console.log('  1. Check your .env file has TONCENTER_API_KEY and MNEMONIC')
+    console.log('  2. Make sure you have testnet TON in your wallet')
+    console.log('  3. Get testnet TON from @testgiver_ton_bot on Telegram')
   }
 }
-
-// Helper function to calculate contract address from StateInit
-function contractAddressFromStateInit(stateInit: StateInit): Address {
-  // This is a simplified version - in production you'd use proper address calculation
-  // For now, we'll use a placeholder that will be replaced by the actual deployment
-  return Address.parse('EQBvW8Z5huBkMJYdnfAEM5JqTNkuWX3diqYENkWsIL0XggGG')
-} 

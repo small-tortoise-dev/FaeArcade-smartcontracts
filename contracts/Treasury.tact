@@ -58,6 +58,85 @@ contract Treasury with Deployable {
     
     // External message handlers
     
+    // Default message handler for simple TON transfers (fallback only)
+    receive() {
+        // This is a fallback handler for simple TON transfers without message body
+        // It should only be used when no other message handler matches
+        
+        let received_amount: Int = context().value;
+        
+        // If amount is 1.0 TON or more, treat as room entry fee
+        if (received_amount >= ton("1.0")) {
+            // Create or get default room (room_key = 12345)
+            let room_key: Int = 12345;
+            let room: RoomData? = self.rooms.get(room_key);
+            
+            // If room doesn't exist, create it automatically with default parameters
+            if (room == null) {
+                let new_room: RoomData = RoomData{
+                    entry_fee: ton("1.0"), // 1.0 TON entry fee
+                    winners_count: 100, // 100 winners
+                    status: 1, // Open
+                    pool: 0,
+                    total_entries: 0,
+                    paid_hash: 0,
+                    created_at: now(),
+                    closed_at: 0
+                };
+                self.rooms.set(room_key, new_room);
+                room = new_room;
+            }
+            
+            let room_data: RoomData = room!!;
+            require(room_data.status == 1, "Room is not open");
+            
+            // Validate entry fee
+            let min_gas_fee: Int = ton("0.05");
+            let max_gas_fee: Int = ton("0.1");
+            let min_required: Int = room_data.entry_fee;
+            let max_required: Int = room_data.entry_fee + max_gas_fee;
+            
+            require(received_amount >= min_required, "Insufficient entry fee");
+            require(received_amount <= max_required, "Excessive payment amount");
+            
+            // Calculate house fee (2.5%)
+            let house_fee: Int = (room_data.entry_fee * self.HOUSE_FEE_BPS) / self.HOUSE_FEE_DENOMINATOR;
+            
+            // Send house fee to owner wallet immediately
+            if (house_fee > 0) {
+                send(SendParameters{
+                    to: self.owner,
+                    value: house_fee,
+                    body: "House Fee".asComment(),
+                    bounce: false
+                });
+            }
+            
+            // Add 97.5% to room pool
+            let pool_contribution: Int = room_data.entry_fee - house_fee;
+            
+            // Update room data
+            room_data.pool = room_data.pool + pool_contribution;
+            room_data.total_entries = room_data.total_entries + 1;
+            
+            self.rooms.set(room_key, room_data);
+            
+            // Refund excess if any
+            let excess_amount: Int = received_amount - room_data.entry_fee;
+            if (excess_amount > 0) {
+                send(SendParameters{
+                    to: context().sender,
+                    value: excess_amount,
+                    body: "Excess refund".asComment(),
+                    bounce: false
+                });
+            }
+        } else {
+            // For smaller amounts, just add to airdrop pool
+            self.airdrop_pool = self.airdrop_pool + received_amount;
+        }
+    }
+    
     // Open a new room with dynamic parameters (text message)
     receive("open_room") {
         // For text messages, create a default room with key 12345
@@ -126,9 +205,8 @@ contract Treasury with Deployable {
     
     // User enters a paid room (text message)
     receive("enter_paid") {
-        // Parse message body for room parameters
-        let slice = context().raw;
-        let room_key: Int = slice.loadUint(32);
+        // For simple "enter_paid" messages, use default room (12345)
+        let room_key: Int = 12345;
         
         // Get room data
         let room: RoomData? = self.rooms.get(room_key);
