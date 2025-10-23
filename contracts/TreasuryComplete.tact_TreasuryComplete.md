@@ -1,9 +1,9 @@
 # Tact compilation report
-Contract: Treasury
-BoC Size: 3396 bytes
+Contract: TreasuryComplete
+BoC Size: 4582 bytes
 
 ## Structures (Structs and Messages)
-Total structures: 17
+Total structures: 15
 
 ### DataSize
 TL-B: `_ cells:int257 bits:int257 refs:int257 = DataSize`
@@ -61,20 +61,44 @@ Signature: `FactoryDeploy{queryId:uint64,cashback:address}`
 TL-B: `_ entry_fee:int257 winners_count:int257 status:int257 pool:int257 total_entries:int257 paid_hash:int257 created_at:int257 closed_at:int257 = RoomData`
 Signature: `RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}`
 
-### OpenRoomMessage
-TL-B: `_ room_key:int257 entry_fee:int257 winners_count:int257 = OpenRoomMessage`
-Signature: `OpenRoomMessage{room_key:int257,entry_fee:int257,winners_count:int257}`
-
-### EnterRoomMessage
-TL-B: `_ room_key:int257 entry_fee:int257 = EnterRoomMessage`
-Signature: `EnterRoomMessage{room_key:int257,entry_fee:int257}`
-
-### Treasury$Data
-TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 airdrop_id:int257 rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}> current_room_id:int257 winner_rewards:dict<int, int> claimed_rewards:dict<int, int> HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 = Treasury`
-Signature: `Treasury{owner:address,upgrade_authority:address,airdrop_pool:int257,airdrop_id:int257,rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}>,current_room_id:int257,winner_rewards:dict<int, int>,claimed_rewards:dict<int, int>,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257}`
+### TreasuryComplete$Data
+TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 airdrop_id:int257 rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}> current_room_id:int257 winner_rewards:dict<int, int> claimed_rewards:dict<int, int> HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 EVENT_ROOM_OPENED:int257 EVENT_ROOM_CLOSED:int257 EVENT_PAYOUT_DISTRIBUTED:int257 EVENT_AIRDROP_DISTRIBUTED:int257 EVENT_REWARD_CLAIMED:int257 EVENT_ROOM_ENTRY:int257 = TreasuryComplete`
+Signature: `TreasuryComplete{owner:address,upgrade_authority:address,airdrop_pool:int257,airdrop_id:int257,rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}>,current_room_id:int257,winner_rewards:dict<int, int>,claimed_rewards:dict<int, int>,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257,EVENT_ROOM_OPENED:int257,EVENT_ROOM_CLOSED:int257,EVENT_PAYOUT_DISTRIBUTED:int257,EVENT_AIRDROP_DISTRIBUTED:int257,EVENT_REWARD_CLAIMED:int257,EVENT_ROOM_ENTRY:int257}`
 
 ## Get methods
-Total get methods: 0
+Total get methods: 10
+
+## getOwner
+No arguments
+
+## getUpgradeAuthority
+No arguments
+
+## getAirdropPool
+No arguments
+
+## getAirdropId
+No arguments
+
+## getCurrentRoomId
+No arguments
+
+## getRoomData
+Argument: room_key
+
+## getWinnerReward
+Argument: room_key
+Argument: winner_address
+
+## getClaimedReward
+Argument: room_key
+Argument: winner_address
+
+## getHouseFeeBps
+No arguments
+
+## getHouseFeeDenominator
+No arguments
 
 ## Exit codes
 * 2: Stack underflow
@@ -114,32 +138,27 @@ Total get methods: 0
 * 136: Invalid standard address
 * 138: Not a basechain address
 * 2493: Entry fee must be positive
+* 3335: Reward already claimed
 * 5883: Room is not open
-* 6225: No reward for this address
-* 10215: Room is not paid
 * 14103: Room not found
 * 14506: Too many winners
 * 16751: Room already paid
-* 20096: Insufficient entry fee
-* 26825: Only owner can withdraw
 * 27407: Room already exists
 * 39893: Winners count must be positive
-* 40266: Room key must be positive
-* 43137: No remaining reward to claim
 * 49080: No airdrop pool available
+* 49729: Unauthorized
 * 50845: Room is not closed
-* 55591: Insufficient contract balance
-* 58501: Entry fee mismatch
+* 60262: Incorrect entry fee
 * 62631: Winners count mismatch
-* 63002: Excessive payment amount
+* 63475: No rewards to claim
 
 ## Trait inheritance diagram
 
 ```mermaid
 graph TD
-Treasury
-Treasury --> BaseTrait
-Treasury --> Deployable
+TreasuryComplete
+TreasuryComplete --> BaseTrait
+TreasuryComplete --> Deployable
 Deployable --> BaseTrait
 ```
 
@@ -147,5 +166,5 @@ Deployable --> BaseTrait
 
 ```mermaid
 graph TD
-Treasury
+TreasuryComplete
 ```

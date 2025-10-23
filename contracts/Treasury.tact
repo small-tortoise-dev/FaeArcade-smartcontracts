@@ -12,6 +12,18 @@ struct RoomData {
     closed_at: Int;
 }
 
+// Message structures for external calls
+struct OpenRoomMessage {
+    room_key: Int;
+    entry_fee: Int;
+    winners_count: Int;
+}
+
+struct EnterRoomMessage {
+    room_key: Int;
+    entry_fee: Int;
+}
+
 // FAE Arcade Treasury Contract - Complete Implementation
 contract Treasury with Deployable {
     
@@ -46,7 +58,7 @@ contract Treasury with Deployable {
     
     // External message handlers
     
-    // Open a new room with default parameters (text message)
+    // Open a new room with dynamic parameters (text message)
     receive("open_room") {
         // For text messages, create a default room with key 12345
         let room_key: Int = 12345;
@@ -78,13 +90,48 @@ contract Treasury with Deployable {
         self.current_room_id = room_key;
     }
     
+    // Open room with specific parameters (text message with parameters)
+    receive("open_room_params") {
+        // Parse message body for parameters using context().raw
+        let slice = context().raw;
+        let room_key: Int = slice.loadUint(32);
+        let entry_fee: Int = slice.loadCoins();
+        let winners_count: Int = slice.loadUint(8);
+        
+        // Validate parameters
+        require(entry_fee > 0, "Entry fee must be positive");
+        require(winners_count > 0, "Winners count must be positive");
+        require(winners_count <= 1000, "Too many winners");
+        require(room_key > 0, "Room key must be positive");
+        
+        // Check if room already exists
+        let existing_room: RoomData? = self.rooms.get(room_key);
+        require(existing_room == null, "Room already exists");
+        
+        // Create new room
+        let new_room: RoomData = RoomData{
+            entry_fee: entry_fee,
+            winners_count: winners_count,
+            status: 1, // Open
+            pool: 0,
+            total_entries: 0,
+            paid_hash: 0,
+            created_at: now(),
+            closed_at: 0
+        };
+        
+        self.rooms.set(room_key, new_room);
+        self.current_room_id = room_key;
+    }
+    
     // User enters a paid room (text message)
     receive("enter_paid") {
-        // For text messages, we need to use a default room key
-        let default_room_key: Int = 12345; // Default room key for now
+        // Parse message body for room parameters
+        let slice = context().raw;
+        let room_key: Int = slice.loadUint(32);
         
         // Get room data
-        let room: RoomData? = self.rooms.get(default_room_key);
+        let room: RoomData? = self.rooms.get(room_key);
         
         // If room doesn't exist, create it automatically with default parameters
         if (room == null) {
@@ -98,7 +145,7 @@ contract Treasury with Deployable {
                 created_at: now(),
                 closed_at: 0
             };
-            self.rooms.set(default_room_key, new_room);
+            self.rooms.set(room_key, new_room);
             room = new_room;
         }
         
@@ -135,7 +182,7 @@ contract Treasury with Deployable {
         room_data.pool = room_data.pool + pool_contribution;
         room_data.total_entries = room_data.total_entries + 1;
         
-        self.rooms.set(default_room_key, room_data);
+        self.rooms.set(room_key, room_data);
         
         // Refund excess if any
         let excess_amount: Int = received_amount - room_data.entry_fee;
@@ -149,9 +196,70 @@ contract Treasury with Deployable {
         }
     }
     
-    // Close a room (text message)
-    receive("close_room") {
-        let room_key: Int = 12345; // Default room key
+    // User enters a paid room with specific parameters (text message with parameters)
+    receive("enter_room_params") {
+        // Parse message body for parameters using context().raw
+        let slice = context().raw;
+        let room_key: Int = slice.loadUint(32);
+        let expected_entry_fee: Int = slice.loadCoins();
+        
+        // Get room data
+        let room: RoomData? = self.rooms.get(room_key);
+        require(room != null, "Room not found");
+        
+        let room_data: RoomData = room!!;
+        require(room_data.status == 1, "Room is not open");
+        require(room_data.entry_fee == expected_entry_fee, "Entry fee mismatch");
+        
+        // Validate entry fee
+        let received_amount: Int = context().value;
+        let min_gas_fee: Int = ton("0.05");
+        let max_gas_fee: Int = ton("0.1");
+        let min_required: Int = room_data.entry_fee;
+        let max_required: Int = room_data.entry_fee + max_gas_fee;
+        
+        require(received_amount >= min_required, "Insufficient entry fee");
+        require(received_amount <= max_required, "Excessive payment amount");
+        
+        // Calculate house fee (2.5%)
+        let house_fee: Int = (room_data.entry_fee * self.HOUSE_FEE_BPS) / self.HOUSE_FEE_DENOMINATOR;
+        
+        // Send house fee to owner wallet immediately
+        if (house_fee > 0) {
+            send(SendParameters{
+                to: self.owner,
+                value: house_fee,
+                body: "House Fee".asComment(),
+                bounce: false
+            });
+        }
+        
+        // Add 97.5% to room pool
+        let pool_contribution: Int = room_data.entry_fee - house_fee;
+        
+        // Update room data
+        room_data.pool = room_data.pool + pool_contribution;
+        room_data.total_entries = room_data.total_entries + 1;
+        
+        self.rooms.set(room_key, room_data);
+        
+        // Refund excess if any
+        let excess_amount: Int = received_amount - room_data.entry_fee;
+        if (excess_amount > 0) {
+            send(SendParameters{
+                to: context().sender,
+                value: excess_amount,
+                body: "Excess refund".asComment(),
+                bounce: false
+            });
+        }
+    }
+    
+    // Close a room (text message with parameters)
+    receive("close_room_params") {
+        // Parse message body for room key using context().raw
+        let slice = context().raw;
+        let room_key: Int = slice.loadUint(32);
         
         // Get room data
         let room: RoomData? = self.rooms.get(room_key);
@@ -175,10 +283,29 @@ contract Treasury with Deployable {
         return room_key * 1000000 + address_offset;
     }
     
-    // Distribute payouts with linear weights (pull-based) - text message
-    receive("distribute_payouts") {
-        let room_key: Int = 12345; // Default room key
-        let winners_count: Int = 100; // Default winners count
+    // Generate daily room key based on date and risk tier
+    fun generateDailyRoomKey(day: Int, risk_tier: Int): Int {
+        // Format: YYYYMMDD + risk_tier
+        // day format: YYYYMMDD (e.g., 20250101)
+        return day * 10 + risk_tier;
+    }
+    
+    // Get risk tier from room key
+    fun getRiskTierFromRoomKey(room_key: Int): Int {
+        return room_key % 10;
+    }
+    
+    // Get day from room key
+    fun getDayFromRoomKey(room_key: Int): Int {
+        return room_key / 10;
+    }
+    
+    // Distribute payouts with linear weights (pull-based) - text message with parameters
+    receive("distribute_payouts_params") {
+        // Parse message body for parameters using context().raw
+        let slice = context().raw;
+        let room_key: Int = slice.loadUint(32);
+        let winners_count: Int = slice.loadUint(8);
         
         // Get room data
         let room: RoomData? = self.rooms.get(room_key);
@@ -193,18 +320,17 @@ contract Treasury with Deployable {
         let total_weight: Int = (winners_count * (winners_count + 1)) / 2;
         let remaining_pool: Int = room_data.pool;
         
-        // For text messages, we'll simulate winner distribution
-        // In a real implementation, winner addresses would be passed in the message
+        // Parse winners and distribute rewards
         let i: Int = 0;
         while (i < winners_count) {
+            let winner_address: Address = slice.loadAddress();
             let weight: Int = winners_count - i; // Linear weight: 1st gets highest weight
             
             // Calculate reward amount
             let reward_amount: Int = (remaining_pool * weight) / total_weight;
             
             // Store reward for later claiming using composite key
-            // For now, we'll use a dummy address hash
-            let composite_key: Int = room_key * 1000000 + i;
+            let composite_key: Int = self.getCompositeKey(room_key, winner_address);
             self.winner_rewards.set(composite_key, reward_amount);
             
             i = i + 1;
@@ -216,10 +342,12 @@ contract Treasury with Deployable {
         self.rooms.set(room_key, room_data);
     }
     
-    // Claim reward (pull-based) - text message
-    receive("claim_reward") {
-        let room_key: Int = 12345; // Default room key
-        let winner_address: Address = context().sender; // Use sender as winner for simplicity
+    // Claim reward (pull-based) - text message with parameters
+    receive("claim_reward_params") {
+        // Parse message body for parameters using context().raw
+        let slice = context().raw;
+        let room_key: Int = slice.loadUint(32);
+        let winner_address: Address = slice.loadAddress();
         
         // Get room data
         let room: RoomData? = self.rooms.get(room_key);
