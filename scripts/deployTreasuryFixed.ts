@@ -1,5 +1,5 @@
 import { toNano } from '@ton/core';
-import { Treasury } from '../wrappers/Treasury';
+import { Treasury } from '../contracts/Treasury.tact_Treasury';
 import { NetworkProvider } from '@ton/blueprint';
 
 export async function run(provider: NetworkProvider) {
@@ -17,6 +17,7 @@ export async function run(provider: NetworkProvider) {
 
     // Deploy with Deploy message
     await treasury.send(
+        provider,
         sender,
         {
             value: toNano('1.1'),

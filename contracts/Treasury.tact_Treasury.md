@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: Treasury
-BoC Size: 3269 bytes
+BoC Size: 1283 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 14
@@ -58,38 +58,11 @@ TL-B: `factory_deploy#6d0ff13b queryId:uint64 cashback:address = FactoryDeploy`
 Signature: `FactoryDeploy{queryId:uint64,cashback:address}`
 
 ### Treasury$Data
-TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 current_room_key:int257 current_room_entry_fee:int257 current_room_winners_count:int257 current_room_status:int257 current_room_pool:int257 current_room_total_entries:int257 current_room_paid_hash:int257 HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 = Treasury`
-Signature: `Treasury{owner:address,upgrade_authority:address,airdrop_pool:int257,current_room_key:int257,current_room_entry_fee:int257,current_room_winners_count:int257,current_room_status:int257,current_room_pool:int257,current_room_total_entries:int257,current_room_paid_hash:int257,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257}`
+TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 rooms:dict<int, int> current_active_room:int257 HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 = Treasury`
+Signature: `Treasury{owner:address,upgrade_authority:address,airdrop_pool:int257,rooms:dict<int, int>,current_active_room:int257,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257}`
 
 ## Get methods
-Total get methods: 9
-
-## getOwner
-No arguments
-
-## getUpgradeAuthority
-No arguments
-
-## getAirdropPool
-No arguments
-
-## getCurrentRoomEntryFee
-No arguments
-
-## getCurrentRoomWinnersCount
-No arguments
-
-## getCurrentRoomStatus
-No arguments
-
-## getCurrentRoomPool
-No arguments
-
-## getCurrentRoomTotalEntries
-No arguments
-
-## getHouseFeeBps
-No arguments
+Total get methods: 0
 
 ## Exit codes
 * 2: Stack underflow
@@ -129,11 +102,12 @@ No arguments
 * 136: Invalid standard address
 * 138: Not a basechain address
 * 5883: Room is not open
-* 16751: Room already paid
+* 14103: Room not found
 * 20096: Insufficient entry fee
+* 26825: Only owner can withdraw
 * 27407: Room already exists
-* 50845: Room is not closed
-* 62631: Winners count mismatch
+* 55591: Insufficient contract balance
+* 60719: No active room
 * 63002: Excessive payment amount
 
 ## Trait inheritance diagram
