@@ -1,9 +1,9 @@
 # Tact compilation report
 Contract: Treasury
-BoC Size: 1283 bytes
+BoC Size: 2512 bytes
 
 ## Structures (Structs and Messages)
-Total structures: 14
+Total structures: 15
 
 ### DataSize
 TL-B: `_ cells:int257 bits:int257 refs:int257 = DataSize`
@@ -57,9 +57,13 @@ Signature: `DeployOk{queryId:uint64}`
 TL-B: `factory_deploy#6d0ff13b queryId:uint64 cashback:address = FactoryDeploy`
 Signature: `FactoryDeploy{queryId:uint64,cashback:address}`
 
+### RoomData
+TL-B: `_ entry_fee:int257 winners_count:int257 status:int257 pool:int257 total_entries:int257 paid_hash:int257 created_at:int257 closed_at:int257 = RoomData`
+Signature: `RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}`
+
 ### Treasury$Data
-TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 rooms:dict<int, int> current_active_room:int257 HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 = Treasury`
-Signature: `Treasury{owner:address,upgrade_authority:address,airdrop_pool:int257,rooms:dict<int, int>,current_active_room:int257,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257}`
+TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 airdrop_id:int257 rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}> current_room_id:int257 winner_rewards:dict<int, int> claimed_rewards:dict<int, int> HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 = Treasury`
+Signature: `Treasury{owner:address,upgrade_authority:address,airdrop_pool:int257,airdrop_id:int257,rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}>,current_room_id:int257,winner_rewards:dict<int, int>,claimed_rewards:dict<int, int>,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257}`
 
 ## Get methods
 Total get methods: 0
@@ -101,13 +105,22 @@ Total get methods: 0
 * 135: Code of a contract was not found
 * 136: Invalid standard address
 * 138: Not a basechain address
+* 2493: Entry fee must be positive
 * 5883: Room is not open
+* 6225: No reward for this address
+* 10215: Room is not paid
 * 14103: Room not found
+* 14506: Too many winners
+* 16751: Room already paid
 * 20096: Insufficient entry fee
 * 26825: Only owner can withdraw
 * 27407: Room already exists
+* 39893: Winners count must be positive
+* 43137: No remaining reward to claim
+* 49080: No airdrop pool available
+* 50845: Room is not closed
 * 55591: Insufficient contract balance
-* 60719: No active room
+* 62631: Winners count mismatch
 * 63002: Excessive payment amount
 
 ## Trait inheritance diagram

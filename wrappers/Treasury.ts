@@ -9,6 +9,17 @@ export type TreasuryConfig = {
   upgradeAuthority: Address
 }
 
+export interface RoomData {
+  entryFee: bigint
+  winnersCount: number
+  status: number // 0=Closed, 1=Open, 2=Paid
+  pool: bigint
+  totalEntries: number
+  paidHash: number
+  createdAt: number
+  closedAt: number
+}
+
 export function treasuryConfigToCell(config: TreasuryConfig): Cell {
   return beginCell()
     .storeAddress(config.owner)
@@ -58,33 +69,47 @@ export class Treasury implements Contract {
   async sendEnterPaid(
     provider: ContractProvider,
     via: Sender,
-    entryFee: bigint
+    value: bigint,
+    roomKey: number
   ) {
+    const body = beginCell()
+      .storeUint(0, 32) // op code
+      .storeUint(roomKey, 32)
+      .endCell()
+
     await provider.internal(via, {
-      value: entryFee,
-      body: beginCell().storeUint(0, 32).storeStringTail('enter_paid').endCell()
+      value,
+      body
     })
   }
 
   async sendCloseRoom(
     provider: ContractProvider,
     via: Sender,
-    value: bigint = toNano('0.1')
+    value: bigint,
+    roomKey: number
   ) {
+    const body = beginCell()
+      .storeUint(0, 32) // op code
+      .storeUint(roomKey, 32)
+      .endCell()
+
     await provider.internal(via, {
       value,
-      body: beginCell().storeUint(0, 32).storeStringTail('close_room').endCell()
+      body
     })
   }
 
-  async sendPayoutPaid(
+  async sendDistributePayouts(
     provider: ContractProvider,
     via: Sender,
     value: bigint,
+    roomKey: number,
     winners: Array<{ address: Address; weight: number }>
   ) {
     const body = beginCell()
       .storeUint(0, 32) // op code
+      .storeUint(roomKey, 32)
       .storeUint(winners.length, 8)
 
     // Add winner addresses
@@ -98,6 +123,25 @@ export class Treasury implements Contract {
     })
   }
 
+  async sendClaimReward(
+    provider: ContractProvider,
+    via: Sender,
+    value: bigint,
+    roomKey: number,
+    winnerAddress: Address
+  ) {
+    const body = beginCell()
+      .storeUint(0, 32) // op code
+      .storeUint(roomKey, 32)
+      .storeAddress(winnerAddress)
+      .endCell()
+
+    await provider.internal(via, {
+      value,
+      body
+    })
+  }
+
   async sendFundAirdrop(
     provider: ContractProvider,
     via: Sender,
@@ -105,19 +149,21 @@ export class Treasury implements Contract {
   ) {
     await provider.internal(via, {
       value: amount,
-      body: beginCell().storeUint(0, 32).storeStringTail('fund_airdrop').endCell()
+      body: beginCell().storeUint(0, 32).endCell()
     })
   }
 
-  async sendPayoutAirdrop(
+  async sendDistributeAirdrop(
     provider: ContractProvider,
     via: Sender,
     value: bigint,
+    airdropId: number,
     topScorerWinners: Address[],
     streakWinners: Address[]
   ) {
     const body = beginCell()
       .storeUint(0, 32) // op code
+      .storeUint(airdropId, 32)
       .storeUint(topScorerWinners.length, 8)
       .storeUint(streakWinners.length, 8)
 
@@ -153,23 +199,71 @@ export class Treasury implements Contract {
     return result.stack.readBigNumber()
   }
 
-  async getCurrentRoomEntryFee(provider: ContractProvider): Promise<bigint> {
-    const result = await provider.get('getCurrentRoomEntryFee', [])
-    return result.stack.readBigNumber()
-  }
-
-  async getCurrentRoomStatus(provider: ContractProvider): Promise<number> {
-    const result = await provider.get('getCurrentRoomStatus', [])
+  async getAirdropId(provider: ContractProvider): Promise<number> {
+    const result = await provider.get('getAirdropId', [])
     return result.stack.readNumber()
   }
 
-  async getCurrentRoomPool(provider: ContractProvider): Promise<bigint> {
-    const result = await provider.get('getCurrentRoomPool', [])
-    return result.stack.readBigNumber()
+  async getCurrentRoomId(provider: ContractProvider): Promise<number> {
+    const result = await provider.get('getCurrentRoomId', [])
+    return result.stack.readNumber()
   }
 
   async getHouseFeeBps(provider: ContractProvider): Promise<number> {
     const result = await provider.get('getHouseFeeBps', [])
     return result.stack.readNumber()
+  }
+
+  async getHouseFeeDenominator(provider: ContractProvider): Promise<number> {
+    const result = await provider.get('getHouseFeeDenominator', [])
+    return result.stack.readNumber()
+  }
+
+  async getRoomData(provider: ContractProvider, roomKey: number): Promise<RoomData | null> {
+    try {
+      const result = await provider.get('getRoomData', [{ type: 'int', value: BigInt(roomKey) }])
+      const roomData = result.stack.readCell()
+      
+      if (roomData) {
+        const slice = roomData.beginParse()
+        return {
+          entryFee: slice.loadCoins(),
+          winnersCount: slice.loadUint(8),
+          status: slice.loadUint(8),
+          pool: slice.loadCoins(),
+          totalEntries: slice.loadUint(32),
+          paidHash: slice.loadUint(32),
+          createdAt: slice.loadUint(32),
+          closedAt: slice.loadUint(32)
+        }
+      }
+      return null
+    } catch (error) {
+      return null
+    }
+  }
+
+  async getWinnerReward(provider: ContractProvider, roomKey: number, winnerAddress: Address): Promise<bigint | null> {
+    try {
+      const result = await provider.get('getWinnerReward', [
+        { type: 'int', value: BigInt(roomKey) },
+        { type: 'slice', cell: beginCell().storeAddress(winnerAddress).endCell() }
+      ])
+      return result.stack.readBigNumber()
+    } catch (error) {
+      return null
+    }
+  }
+
+  async getClaimedReward(provider: ContractProvider, roomKey: number, winnerAddress: Address): Promise<bigint | null> {
+    try {
+      const result = await provider.get('getClaimedReward', [
+        { type: 'int', value: BigInt(roomKey) },
+        { type: 'slice', cell: beginCell().storeAddress(winnerAddress).endCell() }
+      ])
+      return result.stack.readBigNumber()
+    } catch (error) {
+      return null
+    }
   }
 } 

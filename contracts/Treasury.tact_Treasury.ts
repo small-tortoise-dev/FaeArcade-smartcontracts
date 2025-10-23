@@ -756,13 +756,109 @@ export function dictValueParserFactoryDeploy(): DictionaryValue<FactoryDeploy> {
     }
 }
 
+export type RoomData = {
+    $$type: 'RoomData';
+    entry_fee: bigint;
+    winners_count: bigint;
+    status: bigint;
+    pool: bigint;
+    total_entries: bigint;
+    paid_hash: bigint;
+    created_at: bigint;
+    closed_at: bigint;
+}
+
+export function storeRoomData(src: RoomData) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeInt(src.entry_fee, 257);
+        b_0.storeInt(src.winners_count, 257);
+        b_0.storeInt(src.status, 257);
+        const b_1 = new Builder();
+        b_1.storeInt(src.pool, 257);
+        b_1.storeInt(src.total_entries, 257);
+        b_1.storeInt(src.paid_hash, 257);
+        const b_2 = new Builder();
+        b_2.storeInt(src.created_at, 257);
+        b_2.storeInt(src.closed_at, 257);
+        b_1.storeRef(b_2.endCell());
+        b_0.storeRef(b_1.endCell());
+    };
+}
+
+export function loadRoomData(slice: Slice) {
+    const sc_0 = slice;
+    const _entry_fee = sc_0.loadIntBig(257);
+    const _winners_count = sc_0.loadIntBig(257);
+    const _status = sc_0.loadIntBig(257);
+    const sc_1 = sc_0.loadRef().beginParse();
+    const _pool = sc_1.loadIntBig(257);
+    const _total_entries = sc_1.loadIntBig(257);
+    const _paid_hash = sc_1.loadIntBig(257);
+    const sc_2 = sc_1.loadRef().beginParse();
+    const _created_at = sc_2.loadIntBig(257);
+    const _closed_at = sc_2.loadIntBig(257);
+    return { $$type: 'RoomData' as const, entry_fee: _entry_fee, winners_count: _winners_count, status: _status, pool: _pool, total_entries: _total_entries, paid_hash: _paid_hash, created_at: _created_at, closed_at: _closed_at };
+}
+
+export function loadTupleRoomData(source: TupleReader) {
+    const _entry_fee = source.readBigNumber();
+    const _winners_count = source.readBigNumber();
+    const _status = source.readBigNumber();
+    const _pool = source.readBigNumber();
+    const _total_entries = source.readBigNumber();
+    const _paid_hash = source.readBigNumber();
+    const _created_at = source.readBigNumber();
+    const _closed_at = source.readBigNumber();
+    return { $$type: 'RoomData' as const, entry_fee: _entry_fee, winners_count: _winners_count, status: _status, pool: _pool, total_entries: _total_entries, paid_hash: _paid_hash, created_at: _created_at, closed_at: _closed_at };
+}
+
+export function loadGetterTupleRoomData(source: TupleReader) {
+    const _entry_fee = source.readBigNumber();
+    const _winners_count = source.readBigNumber();
+    const _status = source.readBigNumber();
+    const _pool = source.readBigNumber();
+    const _total_entries = source.readBigNumber();
+    const _paid_hash = source.readBigNumber();
+    const _created_at = source.readBigNumber();
+    const _closed_at = source.readBigNumber();
+    return { $$type: 'RoomData' as const, entry_fee: _entry_fee, winners_count: _winners_count, status: _status, pool: _pool, total_entries: _total_entries, paid_hash: _paid_hash, created_at: _created_at, closed_at: _closed_at };
+}
+
+export function storeTupleRoomData(source: RoomData) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.entry_fee);
+    builder.writeNumber(source.winners_count);
+    builder.writeNumber(source.status);
+    builder.writeNumber(source.pool);
+    builder.writeNumber(source.total_entries);
+    builder.writeNumber(source.paid_hash);
+    builder.writeNumber(source.created_at);
+    builder.writeNumber(source.closed_at);
+    return builder.build();
+}
+
+export function dictValueParserRoomData(): DictionaryValue<RoomData> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeRoomData(src)).endCell());
+        },
+        parse: (src) => {
+            return loadRoomData(src.loadRef().beginParse());
+        }
+    }
+}
+
 export type Treasury$Data = {
     $$type: 'Treasury$Data';
     owner: Address;
     upgrade_authority: Address;
     airdrop_pool: bigint;
-    rooms: Dictionary<bigint, bigint>;
-    current_active_room: bigint;
+    airdrop_id: bigint;
+    rooms: Dictionary<bigint, RoomData>;
+    current_room_id: bigint;
+    winner_rewards: Dictionary<bigint, bigint>;
+    claimed_rewards: Dictionary<bigint, bigint>;
     HOUSE_FEE_BPS: bigint;
     HOUSE_FEE_DENOMINATOR: bigint;
 }
@@ -773,11 +869,16 @@ export function storeTreasury$Data(src: Treasury$Data) {
         b_0.storeAddress(src.owner);
         b_0.storeAddress(src.upgrade_authority);
         b_0.storeInt(src.airdrop_pool, 257);
-        b_0.storeDict(src.rooms, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257));
         const b_1 = new Builder();
-        b_1.storeInt(src.current_active_room, 257);
+        b_1.storeInt(src.airdrop_id, 257);
+        b_1.storeDict(src.rooms, Dictionary.Keys.BigInt(257), dictValueParserRoomData());
+        b_1.storeInt(src.current_room_id, 257);
+        b_1.storeDict(src.winner_rewards, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257));
+        b_1.storeDict(src.claimed_rewards, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257));
         b_1.storeInt(src.HOUSE_FEE_BPS, 257);
-        b_1.storeInt(src.HOUSE_FEE_DENOMINATOR, 257);
+        const b_2 = new Builder();
+        b_2.storeInt(src.HOUSE_FEE_DENOMINATOR, 257);
+        b_1.storeRef(b_2.endCell());
         b_0.storeRef(b_1.endCell());
     };
 }
@@ -787,34 +888,44 @@ export function loadTreasury$Data(slice: Slice) {
     const _owner = sc_0.loadAddress();
     const _upgrade_authority = sc_0.loadAddress();
     const _airdrop_pool = sc_0.loadIntBig(257);
-    const _rooms = Dictionary.load(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), sc_0);
     const sc_1 = sc_0.loadRef().beginParse();
-    const _current_active_room = sc_1.loadIntBig(257);
+    const _airdrop_id = sc_1.loadIntBig(257);
+    const _rooms = Dictionary.load(Dictionary.Keys.BigInt(257), dictValueParserRoomData(), sc_1);
+    const _current_room_id = sc_1.loadIntBig(257);
+    const _winner_rewards = Dictionary.load(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), sc_1);
+    const _claimed_rewards = Dictionary.load(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), sc_1);
     const _HOUSE_FEE_BPS = sc_1.loadIntBig(257);
-    const _HOUSE_FEE_DENOMINATOR = sc_1.loadIntBig(257);
-    return { $$type: 'Treasury$Data' as const, owner: _owner, upgrade_authority: _upgrade_authority, airdrop_pool: _airdrop_pool, rooms: _rooms, current_active_room: _current_active_room, HOUSE_FEE_BPS: _HOUSE_FEE_BPS, HOUSE_FEE_DENOMINATOR: _HOUSE_FEE_DENOMINATOR };
+    const sc_2 = sc_1.loadRef().beginParse();
+    const _HOUSE_FEE_DENOMINATOR = sc_2.loadIntBig(257);
+    return { $$type: 'Treasury$Data' as const, owner: _owner, upgrade_authority: _upgrade_authority, airdrop_pool: _airdrop_pool, airdrop_id: _airdrop_id, rooms: _rooms, current_room_id: _current_room_id, winner_rewards: _winner_rewards, claimed_rewards: _claimed_rewards, HOUSE_FEE_BPS: _HOUSE_FEE_BPS, HOUSE_FEE_DENOMINATOR: _HOUSE_FEE_DENOMINATOR };
 }
 
 export function loadTupleTreasury$Data(source: TupleReader) {
     const _owner = source.readAddress();
     const _upgrade_authority = source.readAddress();
     const _airdrop_pool = source.readBigNumber();
-    const _rooms = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
-    const _current_active_room = source.readBigNumber();
+    const _airdrop_id = source.readBigNumber();
+    const _rooms = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), dictValueParserRoomData(), source.readCellOpt());
+    const _current_room_id = source.readBigNumber();
+    const _winner_rewards = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
+    const _claimed_rewards = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
     const _HOUSE_FEE_BPS = source.readBigNumber();
     const _HOUSE_FEE_DENOMINATOR = source.readBigNumber();
-    return { $$type: 'Treasury$Data' as const, owner: _owner, upgrade_authority: _upgrade_authority, airdrop_pool: _airdrop_pool, rooms: _rooms, current_active_room: _current_active_room, HOUSE_FEE_BPS: _HOUSE_FEE_BPS, HOUSE_FEE_DENOMINATOR: _HOUSE_FEE_DENOMINATOR };
+    return { $$type: 'Treasury$Data' as const, owner: _owner, upgrade_authority: _upgrade_authority, airdrop_pool: _airdrop_pool, airdrop_id: _airdrop_id, rooms: _rooms, current_room_id: _current_room_id, winner_rewards: _winner_rewards, claimed_rewards: _claimed_rewards, HOUSE_FEE_BPS: _HOUSE_FEE_BPS, HOUSE_FEE_DENOMINATOR: _HOUSE_FEE_DENOMINATOR };
 }
 
 export function loadGetterTupleTreasury$Data(source: TupleReader) {
     const _owner = source.readAddress();
     const _upgrade_authority = source.readAddress();
     const _airdrop_pool = source.readBigNumber();
-    const _rooms = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
-    const _current_active_room = source.readBigNumber();
+    const _airdrop_id = source.readBigNumber();
+    const _rooms = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), dictValueParserRoomData(), source.readCellOpt());
+    const _current_room_id = source.readBigNumber();
+    const _winner_rewards = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
+    const _claimed_rewards = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
     const _HOUSE_FEE_BPS = source.readBigNumber();
     const _HOUSE_FEE_DENOMINATOR = source.readBigNumber();
-    return { $$type: 'Treasury$Data' as const, owner: _owner, upgrade_authority: _upgrade_authority, airdrop_pool: _airdrop_pool, rooms: _rooms, current_active_room: _current_active_room, HOUSE_FEE_BPS: _HOUSE_FEE_BPS, HOUSE_FEE_DENOMINATOR: _HOUSE_FEE_DENOMINATOR };
+    return { $$type: 'Treasury$Data' as const, owner: _owner, upgrade_authority: _upgrade_authority, airdrop_pool: _airdrop_pool, airdrop_id: _airdrop_id, rooms: _rooms, current_room_id: _current_room_id, winner_rewards: _winner_rewards, claimed_rewards: _claimed_rewards, HOUSE_FEE_BPS: _HOUSE_FEE_BPS, HOUSE_FEE_DENOMINATOR: _HOUSE_FEE_DENOMINATOR };
 }
 
 export function storeTupleTreasury$Data(source: Treasury$Data) {
@@ -822,8 +933,11 @@ export function storeTupleTreasury$Data(source: Treasury$Data) {
     builder.writeAddress(source.owner);
     builder.writeAddress(source.upgrade_authority);
     builder.writeNumber(source.airdrop_pool);
-    builder.writeCell(source.rooms.size > 0 ? beginCell().storeDictDirect(source.rooms, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257)).endCell() : null);
-    builder.writeNumber(source.current_active_room);
+    builder.writeNumber(source.airdrop_id);
+    builder.writeCell(source.rooms.size > 0 ? beginCell().storeDictDirect(source.rooms, Dictionary.Keys.BigInt(257), dictValueParserRoomData()).endCell() : null);
+    builder.writeNumber(source.current_room_id);
+    builder.writeCell(source.winner_rewards.size > 0 ? beginCell().storeDictDirect(source.winner_rewards, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257)).endCell() : null);
+    builder.writeCell(source.claimed_rewards.size > 0 ? beginCell().storeDictDirect(source.claimed_rewards, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257)).endCell() : null);
     builder.writeNumber(source.HOUSE_FEE_BPS);
     builder.writeNumber(source.HOUSE_FEE_DENOMINATOR);
     return builder.build();
@@ -855,7 +969,7 @@ function initTreasury_init_args(src: Treasury_init_args) {
 }
 
 async function Treasury_init(owner: Address, upgrade_authority: Address) {
-    const __code = Cell.fromHex('b5ee9c7241020e010004f70002f8ff00208f7330eda2edfb01d072d721d200d200fa4021103450666f04f86102f862ed44d0d200018e28fa40fa40810101d700f404d401d0810101d700810101d700810101d7003010371036103510346c178e14fa40fa405902d1016d8100fa8127107052021413e208925f08e026d749c21fe30006f90120e1f2c80b010200f006d31f018210946a98b6ba8e69d33f30c8018210aff90f5758cb1fcb3fc91057104610354430f84270705003804201503304c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00c87f01ca0055605067ce14ce12810101cf00f40001c8810101cf0012810101cf0012810101cf00cdc9ed54db31e00604e482f090749feb14c2fda253536c99587706f062ad151ec413d58a3a06028f7cced1a7bae3022082f01965172e995d3dfe36ccfac1fd31d9136f9e96ef54ab2dcf5e85043fc7c57a7ebae3022082f0da18ac76f0b7a9f079b0d3acde58803199dd9e46738a934e5c963bc0a2485b95bae302200304080900f05b820934fdf581010154520052304133f40c6fa19401d70030925b6de2816b0f016ef2f48219643b9aca00810101201034544433216e955b59f45a3098c801cf004133f442e210461035443302c87f01ca0055605067ce14ce12810101cf00f40001c8810101cf0012810101cf0012810101cf00cdc9ed5401fc30208200ed2f21c200f2f481010154530052304133f40c6fa19401d70030925b6de2813717216eb3f2f420206ef2d080841fb021206ef2d080ab1f8407b022206ef2d080ab278407b023206ef2d080ab2f843fb004206ef2d080ab5f841fb08116fb22c001f2f4f8416f24135f035344821005f5e100a022814e8003be120501fef2f4218200f61a02bbf2f4534ca82ea9045250a116a001a403aa1f5240a002aa2712a001aa2fa001aa5fa0810101201047134550216e955b59f45a3098c801cf004133f442e25033a120c2009130e30d10465513c87f01ca0055605067ce14ce12810101cf00f40001c8810101cf0012810101cf0012810101cf00cdc9ed5406017af84288127070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb000700220000000045786365737320726566756e6401fa308200ed2f21c200f2f481010154520052304133f40c6fa19401d70030925b6de2813717216eb3f2f420206ef2d080841fb021206ef2d080ab1f8407b022206ef2d080ab2f843fb003206ef2d080ab5f841fb001aa1f12a002aa2f12a001aa5fa0810101541222216e955b59f45a3098c801cf004133f442e2551370020d01c282f0ae1f55287d6c4d2042cc5941a8a23c971d49bf5e554d4fa78ae730638e083cb7ba8e3b30f8416f24135f0313a0104610355034c87f01ca0055605067ce14ce12810101cf00f40001c8810101cf0012810101cf0012810101cf00cdc9ed54e00a015482f07a30a75847a91ec28530dee9e62e368bbe2b319683b6acfe75a0c9337c8cc078bae3025f07f2c0820b02ba8168c9f84226c705f2f482103b9aca00f8276f10218200d92702bbf2f48826597070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00104655130c0d0028000000004f776e6572205769746864726177616c0056c87f01ca0055605067ce14ce12810101cf00f40001c8810101cf0012810101cf0012810101cf00cdc9ed54a2713767');
+    const __code = Cell.fromHex('b5ee9c7241021f010009c4000110ff0020e303f2c80b0101f830eda2edfb01d072d721d200d200fa4021103450666f04f86102f862ed44d0d200018e32fa40fa40810101d700d401d0810101d700f404810101d700f404f404810101d700d430d0810101d70030107a107910786c1a8e19fa40fa405902d1016d6d6d8100fa8127107054355545645003e20b925f0be029d749c21f0204c28e8e09d31f018210946a98b6bae30209de09f9012082f090749feb14c2fda253536c99587706f062ad151ec413d58a3a06028f7cced1a7bae3022082f01965172e995d3dfe36ccfac1fd31d9136f9e96ef54ab2dcf5e85043fc7c57a7ebae302200304060c00fed33f30c8018210aff90f5758cb1fcb3fc9108a10791068105710461035443012f84270705003804201503304c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54db3101ee3032813039821059682f008064258101012459f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2816b0f016ef2f471705300f823210706050443138101015028c80501aa55705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc922103601206e953059f45a30944133f415e210791068105710465035141e01fe30813039248101012259f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f288116fb26c001f2f4f8416f24135f035388821005f5e100a022814e800702e403be12f2f4218200f61a02bbf2f4285613a85614a90420c2008ebf8870561454433070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00de5290a116a004a4810101290710691058104943185092c80809001a00000000486f7573652046656502ac55705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9103814206e953059f45a30944133f415e205a120c2009130e30d107955160a1e017af84288127070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb000b00220000000045786365737320726566756e6404e482f0da18ac76f0b7a9f079b0d3acde58803199dd9e46738a934e5c963bc0a2485b95bae3022082f0fa2652f21439d1afdd07efa4c24234c82f85267383af499ce9d061b670b9f38fbae3022082f09d16c025e96bc3a173bf334917d57133de7d3f33eef0e72f38c85976f854afb8bae302200d0e111801fa30813039248101012259f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f28308116fb05c00115f2f470f823106710571443308101015088c81001fe308130398064258101012359f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f288200c69d06c00016f2f481416f02c00012f2f48200f4a725c0640f0194f2f48113ba23709320c1648e2e5390a15220a823a9048212dfd1c04022a0810101200411100413216e955b59f45a3098c801cf004133f442e20ca4e85f033672f82350048101015088c81001a855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9103612206e953059f45a30944133f415e210791068105710464435121e01fe30813039f842258101012359f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f2810565f068127e732c002f2f4109a1089107810671056104510341204fe43bb2bdb3c81010154550052304133f40c6fa19401d70030925b6de2811851216eb3f2f47081010154560052504133f40c6fa19401d70030925b6de2206eb39631206ef2d0809130e201206ef2d08021a18200a88121c200f2f488542ee07070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb08a13141516001a308130390182080f4240a801a000200000000052657761726420436c61696d00065bcf8101d88ae2f400c901fb008101010da02c1045103d216e955b59f45a3098c801cf004133f442e21089107810671056104510344013c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed5417001a58cf8680cf8480f400f400cf8101ee82f0ae1f55287d6c4d2042cc5941a8a23c971d49bf5e554d4fa78ae730638e083cb7ba8e5030f8416f24135f0316a0107910680710461035443012c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54e02019029e82f07e9a4e9c4db87f8cc634e496e2f129f07172c3894b3498755d7d69745e4ba895bae30282f07a30a75847a91ec28530dee9e62e368bbe2b319683b6acfe75a0c9337c8cc078bae3025f0af2c0821a1c02ce307a8200bfb827c200f2f405a406ab005206a9043524c2008ebef8428841607070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb009134e21068105770071056103544301b1e002c00000000546f702053636f7265722041697264726f7002ba8168c9f84229c705f2f482103b9aca00f8276f10218200d92702bbf2f48829597070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00107955161d1e0028000000004f776e6572205769746864726177616c0074c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54e0d26198');
     const builder = beginCell();
     builder.storeUint(0, 1);
     initTreasury_init_args({ $$type: 'Treasury_init_args', owner, upgrade_authority })(builder);
@@ -900,13 +1014,22 @@ export const Treasury_errors = {
     135: { message: "Code of a contract was not found" },
     136: { message: "Invalid standard address" },
     138: { message: "Not a basechain address" },
+    2493: { message: "Entry fee must be positive" },
     5883: { message: "Room is not open" },
+    6225: { message: "No reward for this address" },
+    10215: { message: "Room is not paid" },
     14103: { message: "Room not found" },
+    14506: { message: "Too many winners" },
+    16751: { message: "Room already paid" },
     20096: { message: "Insufficient entry fee" },
     26825: { message: "Only owner can withdraw" },
     27407: { message: "Room already exists" },
+    39893: { message: "Winners count must be positive" },
+    43137: { message: "No remaining reward to claim" },
+    49080: { message: "No airdrop pool available" },
+    50845: { message: "Room is not closed" },
     55591: { message: "Insufficient contract balance" },
-    60719: { message: "No active room" },
+    62631: { message: "Winners count mismatch" },
     63002: { message: "Excessive payment amount" },
 } as const
 
@@ -947,13 +1070,22 @@ export const Treasury_errors_backward = {
     "Code of a contract was not found": 135,
     "Invalid standard address": 136,
     "Not a basechain address": 138,
+    "Entry fee must be positive": 2493,
     "Room is not open": 5883,
+    "No reward for this address": 6225,
+    "Room is not paid": 10215,
     "Room not found": 14103,
+    "Too many winners": 14506,
+    "Room already paid": 16751,
     "Insufficient entry fee": 20096,
     "Only owner can withdraw": 26825,
     "Room already exists": 27407,
+    "Winners count must be positive": 39893,
+    "No remaining reward to claim": 43137,
+    "No airdrop pool available": 49080,
+    "Room is not closed": 50845,
     "Insufficient contract balance": 55591,
-    "No active room": 60719,
+    "Winners count mismatch": 62631,
     "Excessive payment amount": 63002,
 } as const
 
@@ -971,7 +1103,8 @@ const Treasury_types: ABIType[] = [
     {"name":"Deploy","header":2490013878,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"DeployOk","header":2952335191,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
     {"name":"FactoryDeploy","header":1829761339,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"cashback","type":{"kind":"simple","type":"address","optional":false}}]},
-    {"name":"Treasury$Data","header":null,"fields":[{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"upgrade_authority","type":{"kind":"simple","type":"address","optional":false}},{"name":"airdrop_pool","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"rooms","type":{"kind":"dict","key":"int","value":"int"}},{"name":"current_active_room","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"HOUSE_FEE_BPS","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"HOUSE_FEE_DENOMINATOR","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
+    {"name":"RoomData","header":null,"fields":[{"name":"entry_fee","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"winners_count","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"status","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"pool","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"total_entries","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"paid_hash","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"created_at","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"closed_at","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
+    {"name":"Treasury$Data","header":null,"fields":[{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"upgrade_authority","type":{"kind":"simple","type":"address","optional":false}},{"name":"airdrop_pool","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"airdrop_id","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"rooms","type":{"kind":"dict","key":"int","value":"RoomData","valueFormat":"ref"}},{"name":"current_room_id","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"winner_rewards","type":{"kind":"dict","key":"int","value":"int"}},{"name":"claimed_rewards","type":{"kind":"dict","key":"int","value":"int"}},{"name":"HOUSE_FEE_BPS","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"HOUSE_FEE_DENOMINATOR","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
 ]
 
 const Treasury_opcodes = {
@@ -990,7 +1123,10 @@ const Treasury_receivers: ABIReceiver[] = [
     {"receiver":"internal","message":{"kind":"text","text":"open_room"}},
     {"receiver":"internal","message":{"kind":"text","text":"enter_paid"}},
     {"receiver":"internal","message":{"kind":"text","text":"close_room"}},
+    {"receiver":"internal","message":{"kind":"text","text":"distribute_payouts"}},
+    {"receiver":"internal","message":{"kind":"text","text":"claim_reward"}},
     {"receiver":"internal","message":{"kind":"text","text":"fund_airdrop"}},
+    {"receiver":"internal","message":{"kind":"text","text":"distribute_airdrop"}},
     {"receiver":"internal","message":{"kind":"text","text":"withdraw_owner"}},
     {"receiver":"internal","message":{"kind":"typed","type":"Deploy"}},
 ]
@@ -1030,7 +1166,7 @@ export class Treasury implements Contract {
         this.init = init;
     }
     
-    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: "open_room" | "enter_paid" | "close_room" | "fund_airdrop" | "withdraw_owner" | Deploy) {
+    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: "open_room" | "enter_paid" | "close_room" | "distribute_payouts" | "claim_reward" | "fund_airdrop" | "distribute_airdrop" | "withdraw_owner" | Deploy) {
         
         let body: Cell | null = null;
         if (message === "open_room") {
@@ -1042,7 +1178,16 @@ export class Treasury implements Contract {
         if (message === "close_room") {
             body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
         }
+        if (message === "distribute_payouts") {
+            body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
+        }
+        if (message === "claim_reward") {
+            body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
+        }
         if (message === "fund_airdrop") {
+            body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
+        }
+        if (message === "distribute_airdrop") {
             body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
         }
         if (message === "withdraw_owner") {

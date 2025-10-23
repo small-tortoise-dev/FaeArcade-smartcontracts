@@ -18,12 +18,16 @@ export async function run(provider: NetworkProvider) {
     console.log('Address:', deployer.toString())
     console.log('Network: testnet')
     
+    // Configure specific addresses for owner and upgrade authority
+    const ownerAddress = Address.parse("0QCUJFmHpbM8JHZRZMi-bjUW2oGY1lKjsisLjMwMNXBplNV6"); // Your deployer wallet
+    const upgradeAuthorityAddress = Address.parse("0QAE68-izIsvSJ7eh7LnUcVIsV05oneViSZVAokybGLxLOMX"); // Your upgrade authority wallet
+    
     // Create Treasury contract
-    const treasury = await Treasury.fromInit(deployer, deployer)
+    const treasury = await Treasury.fromInit(ownerAddress, upgradeAuthorityAddress)
     
     console.log('\n📋 Contract Configuration:')
-    console.log('Owner:', deployer.toString())
-    console.log('Upgrade Authority:', deployer.toString())
+    console.log('Owner:', ownerAddress.toString())
+    console.log('Upgrade Authority:', upgradeAuthorityAddress.toString())
     console.log('Contract Address:', treasury.address.toString())
     
     console.log('\n🚀 Deploying contract...')
@@ -39,7 +43,8 @@ export async function run(provider: NetworkProvider) {
     
     console.log('\n🎉 Treasury Contract Deployed Successfully!')
     console.log('Contract Address:', treasury.address.toString())
-    console.log('Owner:', deployer.toString())
+    console.log('Owner:', ownerAddress.toString())
+    console.log('Upgrade Authority:', upgradeAuthorityAddress.toString())
     
     console.log('\n📝 Add to your .env file:')
     console.log(`TREASURY_ADDRESS=${treasury.address.toString()}`)
