@@ -5,16 +5,10 @@
   "private": true,
   "scripts": {
     "build": "tsx scripts/build.ts",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
     "deploy": "tsx scripts/deploy.ts",
     "deploy:testnet": "tsx scripts/deploy.ts --network testnet",
     "deploy:mainnet": "tsx scripts/deploy.ts --network mainnet",
-    "deploy:fixed": "tsx scripts/deployFixed.ts",
-    "test:contract": "tsx scripts/test-complete-implementation.ts",
-    "setup:wallet": "tsx scripts/setupWallet.ts",
-    "check:balance": "tsx scripts/checkBalance.ts",
+    "deploy:treasury": "tsx scripts/deployTreasury.ts",
     "script": "tsx",
     "clean": "rimraf build dist"
   },
@@ -25,12 +19,10 @@
     "@ton/sandbox": "^0.36.0",
     "@ton/ton": "^15.4.0",
     "@types/node": "^20.0.0",
-    "@vitest/coverage-v8": "^3.0.0",
     "rimraf": "^5.0.0",
     "ton": "^6.13.1",
     "tsx": "^4.0.0",
-    "typescript": "^5.0.0",
-    "vitest": "^3.0.0"
+    "typescript": "^5.0.0"
   },
   "dependencies": {
     "@tact-lang/compiler": "^1.6.13",

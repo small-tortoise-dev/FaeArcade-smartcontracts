@@ -562,43 +562,6 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
         }
         
     }
-    ;; Receive empty message
-    if ((op == 0) & (in_msg_length <= 32)) {
-        int $received_amount = $Context$_get_value(__tact_context_get());
-        if (($received_amount >= 1000000000)) {
-            int $room_key = 12345;
-            tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
-            if (null?($room)) {
-                var ($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at) = $RoomData$_constructor_entry_fee_winners_count_status_pool_total_entries_paid_hash_created_at_closed_at(1000000000, 100, 1, 0, 0, 0, $global_now(), 0);
-                $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at), begin_cell()));
-                $room = $RoomData$_as_optional(($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at));
-            }
-            var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
-            throw_unless(5883, ($room_data'status == 1));
-            int $min_gas_fee = 50000000;
-            int $max_gas_fee = 100000000;
-            int $min_required = $room_data'entry_fee;
-            int $max_required = ($room_data'entry_fee + $max_gas_fee);
-            throw_unless(20096, ($received_amount >= $min_required));
-            throw_unless(63002, ($received_amount <= $max_required));
-            int $house_fee = (($room_data'entry_fee * $self'HOUSE_FEE_BPS) / $self'HOUSE_FEE_DENOMINATOR);
-            if (($house_fee > 0)) {
-                $global_send($SendParameters$_constructor_to_value_body_bounce($self'owner, $house_fee, __gen_cell_cell_6d1a8dee4d2a1b026369221c05709ba15866c5c3b4bde448cc0c4a8e84202a4f(), false));
-            }
-            int $pool_contribution = ($room_data'entry_fee - $house_fee);
-            $room_data'pool = ($room_data'pool + $pool_contribution);
-            $room_data'total_entries = ($room_data'total_entries + 1);
-            $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
-            int $excess_amount = ($received_amount - $room_data'entry_fee);
-            if (($excess_amount > 0)) {
-                $global_send($SendParameters$_constructor_to_value_body_bounce(__tact_context_get_sender(), $excess_amount, __gen_cell_cell_c1c75eb884c9645193f2b58323ece7de629f4b631731640616f0fe82d137d2ed(), false));
-            }
-        } else {
-            $self'airdrop_pool = ($self'airdrop_pool + $received_amount);
-        }
-        $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
-        return ();
-    }
     ;; Empty Receiver and Text Receivers
     var text_op = slice_hash(in_msg);
     ;; Receive "open_room" message
@@ -640,9 +603,34 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
         int $room_key = 12345;
         tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
         if (null?($room)) {
-            var ($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at) = $RoomData$_constructor_entry_fee_winners_count_status_pool_total_entries_paid_hash_created_at_closed_at(1000000000, 100, 1, 0, 0, 0, $global_now(), 0);
+            int $received_amount = $Context$_get_value(__tact_context_get());
+            int $entry_fee = 1000000000;
+            int $winners_count = 100;
+            if (($received_amount >= 5000000000)) {
+                $entry_fee = 5000000000;
+                $winners_count = 25;
+            } elseif (($received_amount >= 2000000000)) {
+                $entry_fee = 2000000000;
+                $winners_count = 50;
+            } else {
+                $entry_fee = 1000000000;
+                $winners_count = 100;
+            }
+            var ($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at) = $RoomData$_constructor_entry_fee_winners_count_status_pool_total_entries_paid_hash_created_at_closed_at($entry_fee, $winners_count, 1, 0, 0, 0, $global_now(), 0);
             $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at), begin_cell()));
             $room = $RoomData$_as_optional(($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at));
+        } else {
+            int $received_amount = $Context$_get_value(__tact_context_get());
+            var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
+            if (( (($received_amount >= 5000000000)) ? (($room_data'entry_fee < 5000000000)) : (false) )) {
+                $room_data'entry_fee = 5000000000;
+                $room_data'winners_count = 25;
+            } elseif (( (($received_amount >= 2000000000)) ? (($room_data'entry_fee < 2000000000)) : (false) )) {
+                $room_data'entry_fee = 2000000000;
+                $room_data'winners_count = 50;
+            }
+            $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
+            $room = $RoomData$_as_optional(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at));
         }
         var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
         throw_unless(5883, ($room_data'status == 1));
@@ -652,7 +640,7 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
         int $min_required = $room_data'entry_fee;
         int $max_required = ($room_data'entry_fee + $max_gas_fee);
         throw_unless(20096, ($received_amount >= $min_required));
-        throw_unless(63002, ($received_amount <= $max_required));
+        throw_unless(63002, ($received_amount <= 6000000000));
         int $house_fee = (($room_data'entry_fee * $self'HOUSE_FEE_BPS) / $self'HOUSE_FEE_DENOMINATOR);
         if (($house_fee > 0)) {
             $global_send($SendParameters$_constructor_to_value_body_bounce($self'owner, $house_fee, __gen_cell_cell_6d1a8dee4d2a1b026369221c05709ba15866c5c3b4bde448cc0c4a8e84202a4f(), false));
@@ -661,9 +649,11 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
         $room_data'pool = ($room_data'pool + $pool_contribution);
         $room_data'total_entries = ($room_data'total_entries + 1);
         $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
+        int $estimated_gas_fee = 50000000;
         int $excess_amount = ($received_amount - $room_data'entry_fee);
-        if (($excess_amount > 0)) {
-            $global_send($SendParameters$_constructor_to_value_body_bounce(__tact_context_get_sender(), $excess_amount, __gen_cell_cell_c1c75eb884c9645193f2b58323ece7de629f4b631731640616f0fe82d137d2ed(), false));
+        if (($excess_amount > $estimated_gas_fee)) {
+            int $refund_amount = ($excess_amount - $estimated_gas_fee);
+            $global_send($SendParameters$_constructor_to_value_body_bounce(__tact_context_get_sender(), $refund_amount, __gen_cell_cell_c1c75eb884c9645193f2b58323ece7de629f4b631731640616f0fe82d137d2ed(), false));
         }
         $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
         return ();
@@ -684,7 +674,7 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
         int $min_required = $room_data'entry_fee;
         int $max_required = ($room_data'entry_fee + $max_gas_fee);
         throw_unless(20096, ($received_amount >= $min_required));
-        throw_unless(63002, ($received_amount <= $max_required));
+        throw_unless(63002, ($received_amount <= 6000000000));
         int $house_fee = (($room_data'entry_fee * $self'HOUSE_FEE_BPS) / $self'HOUSE_FEE_DENOMINATOR);
         if (($house_fee > 0)) {
             $global_send($SendParameters$_constructor_to_value_body_bounce($self'owner, $house_fee, __gen_cell_cell_6d1a8dee4d2a1b026369221c05709ba15866c5c3b4bde448cc0c4a8e84202a4f(), false));
@@ -693,9 +683,11 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
         $room_data'pool = ($room_data'pool + $pool_contribution);
         $room_data'total_entries = ($room_data'total_entries + 1);
         $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
+        int $estimated_gas_fee = 50000000;
         int $excess_amount = ($received_amount - $room_data'entry_fee);
-        if (($excess_amount > 0)) {
-            $global_send($SendParameters$_constructor_to_value_body_bounce(__tact_context_get_sender(), $excess_amount, __gen_cell_cell_c1c75eb884c9645193f2b58323ece7de629f4b631731640616f0fe82d137d2ed(), false));
+        if (($excess_amount > $estimated_gas_fee)) {
+            int $refund_amount = ($excess_amount - $estimated_gas_fee);
+            $global_send($SendParameters$_constructor_to_value_body_bounce(__tact_context_get_sender(), $refund_amount, __gen_cell_cell_c1c75eb884c9645193f2b58323ece7de629f4b631731640616f0fe82d137d2ed(), false));
         }
         $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
         return ();
