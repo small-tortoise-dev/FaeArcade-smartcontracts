@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: Treasury
-BoC Size: 3645 bytes
+BoC Size: 2582 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 17
@@ -70,8 +70,8 @@ TL-B: `_ room_key:int257 entry_fee:int257 = EnterRoomMessage`
 Signature: `EnterRoomMessage{room_key:int257,entry_fee:int257}`
 
 ### Treasury$Data
-TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 airdrop_id:int257 rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}> current_room_id:int257 winner_rewards:dict<int, int> claimed_rewards:dict<int, int> HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 = Treasury`
-Signature: `Treasury{owner:address,upgrade_authority:address,airdrop_pool:int257,airdrop_id:int257,rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}>,current_room_id:int257,winner_rewards:dict<int, int>,claimed_rewards:dict<int, int>,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257}`
+TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 airdrop_id:int257 rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}> current_room_id:int257 winner_rewards:dict<address, int> claimed_rewards:dict<address, int> HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 = Treasury`
+Signature: `Treasury{owner:address,upgrade_authority:address,airdrop_pool:int257,airdrop_id:int257,rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}>,current_room_id:int257,winner_rewards:dict<address, int>,claimed_rewards:dict<address, int>,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257}`
 
 ## Get methods
 Total get methods: 0
@@ -121,14 +121,12 @@ Total get methods: 0
 * 14506: Too many winners
 * 16751: Room already paid
 * 20096: Insufficient entry fee
-* 26825: Only owner can withdraw
 * 27407: Room already exists
 * 39893: Winners count must be positive
 * 40266: Room key must be positive
 * 43137: No remaining reward to claim
 * 49080: No airdrop pool available
 * 50845: Room is not closed
-* 55591: Insufficient contract balance
 * 58501: Entry fee mismatch
 * 62631: Winners count mismatch
 * 63002: Excessive payment amount

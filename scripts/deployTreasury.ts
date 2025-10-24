@@ -19,11 +19,14 @@ export async function run(provider: NetworkProvider) {
     // Import Treasury wrapper
     const { Treasury } = await import('../wrappers/Treasury')
     
+    // Use specified owner address
+    const ownerAddress = Address.parse("0QCUJFmHpbM8JHZRZMi-bjUW2oGY1lKjsisLjMwMNXBplNV6")
+    
     // Create Treasury contract instance using the wrapper
-    const treasury = await Treasury.fromInit(deployer, deployer)
+    const treasury = await Treasury.fromInit(ownerAddress, deployer)
     
     console.log('\n📋 Contract Configuration:')
-    console.log('Owner:', deployer.toString())
+    console.log('Owner:', ownerAddress.toString())
     console.log('Upgrade Authority:', deployer.toString())
     console.log('Initial Balance: 1 TON')
     
@@ -59,7 +62,7 @@ export async function run(provider: NetworkProvider) {
     
     console.log('\n🎉 Treasury Contract Deployed Successfully!')
     console.log('Contract Address:', treasury.address.toString())
-    console.log('Owner:', deployer.toString())
+    console.log('Owner:', ownerAddress.toString())
     console.log('Upgrade Authority:', deployer.toString())
     console.log('Initial Balance: 1 TON')
     

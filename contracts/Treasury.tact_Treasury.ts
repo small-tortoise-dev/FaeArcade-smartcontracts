@@ -965,8 +965,8 @@ export type Treasury$Data = {
     airdrop_id: bigint;
     rooms: Dictionary<bigint, RoomData>;
     current_room_id: bigint;
-    winner_rewards: Dictionary<bigint, bigint>;
-    claimed_rewards: Dictionary<bigint, bigint>;
+    winner_rewards: Dictionary<Address, bigint>;
+    claimed_rewards: Dictionary<Address, bigint>;
     HOUSE_FEE_BPS: bigint;
     HOUSE_FEE_DENOMINATOR: bigint;
 }
@@ -981,8 +981,8 @@ export function storeTreasury$Data(src: Treasury$Data) {
         b_1.storeInt(src.airdrop_id, 257);
         b_1.storeDict(src.rooms, Dictionary.Keys.BigInt(257), dictValueParserRoomData());
         b_1.storeInt(src.current_room_id, 257);
-        b_1.storeDict(src.winner_rewards, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257));
-        b_1.storeDict(src.claimed_rewards, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257));
+        b_1.storeDict(src.winner_rewards, Dictionary.Keys.Address(), Dictionary.Values.BigInt(257));
+        b_1.storeDict(src.claimed_rewards, Dictionary.Keys.Address(), Dictionary.Values.BigInt(257));
         b_1.storeInt(src.HOUSE_FEE_BPS, 257);
         const b_2 = new Builder();
         b_2.storeInt(src.HOUSE_FEE_DENOMINATOR, 257);
@@ -1000,8 +1000,8 @@ export function loadTreasury$Data(slice: Slice) {
     const _airdrop_id = sc_1.loadIntBig(257);
     const _rooms = Dictionary.load(Dictionary.Keys.BigInt(257), dictValueParserRoomData(), sc_1);
     const _current_room_id = sc_1.loadIntBig(257);
-    const _winner_rewards = Dictionary.load(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), sc_1);
-    const _claimed_rewards = Dictionary.load(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), sc_1);
+    const _winner_rewards = Dictionary.load(Dictionary.Keys.Address(), Dictionary.Values.BigInt(257), sc_1);
+    const _claimed_rewards = Dictionary.load(Dictionary.Keys.Address(), Dictionary.Values.BigInt(257), sc_1);
     const _HOUSE_FEE_BPS = sc_1.loadIntBig(257);
     const sc_2 = sc_1.loadRef().beginParse();
     const _HOUSE_FEE_DENOMINATOR = sc_2.loadIntBig(257);
@@ -1015,8 +1015,8 @@ export function loadTupleTreasury$Data(source: TupleReader) {
     const _airdrop_id = source.readBigNumber();
     const _rooms = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), dictValueParserRoomData(), source.readCellOpt());
     const _current_room_id = source.readBigNumber();
-    const _winner_rewards = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
-    const _claimed_rewards = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
+    const _winner_rewards = Dictionary.loadDirect(Dictionary.Keys.Address(), Dictionary.Values.BigInt(257), source.readCellOpt());
+    const _claimed_rewards = Dictionary.loadDirect(Dictionary.Keys.Address(), Dictionary.Values.BigInt(257), source.readCellOpt());
     const _HOUSE_FEE_BPS = source.readBigNumber();
     const _HOUSE_FEE_DENOMINATOR = source.readBigNumber();
     return { $$type: 'Treasury$Data' as const, owner: _owner, upgrade_authority: _upgrade_authority, airdrop_pool: _airdrop_pool, airdrop_id: _airdrop_id, rooms: _rooms, current_room_id: _current_room_id, winner_rewards: _winner_rewards, claimed_rewards: _claimed_rewards, HOUSE_FEE_BPS: _HOUSE_FEE_BPS, HOUSE_FEE_DENOMINATOR: _HOUSE_FEE_DENOMINATOR };
@@ -1029,8 +1029,8 @@ export function loadGetterTupleTreasury$Data(source: TupleReader) {
     const _airdrop_id = source.readBigNumber();
     const _rooms = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), dictValueParserRoomData(), source.readCellOpt());
     const _current_room_id = source.readBigNumber();
-    const _winner_rewards = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
-    const _claimed_rewards = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257), source.readCellOpt());
+    const _winner_rewards = Dictionary.loadDirect(Dictionary.Keys.Address(), Dictionary.Values.BigInt(257), source.readCellOpt());
+    const _claimed_rewards = Dictionary.loadDirect(Dictionary.Keys.Address(), Dictionary.Values.BigInt(257), source.readCellOpt());
     const _HOUSE_FEE_BPS = source.readBigNumber();
     const _HOUSE_FEE_DENOMINATOR = source.readBigNumber();
     return { $$type: 'Treasury$Data' as const, owner: _owner, upgrade_authority: _upgrade_authority, airdrop_pool: _airdrop_pool, airdrop_id: _airdrop_id, rooms: _rooms, current_room_id: _current_room_id, winner_rewards: _winner_rewards, claimed_rewards: _claimed_rewards, HOUSE_FEE_BPS: _HOUSE_FEE_BPS, HOUSE_FEE_DENOMINATOR: _HOUSE_FEE_DENOMINATOR };
@@ -1044,8 +1044,8 @@ export function storeTupleTreasury$Data(source: Treasury$Data) {
     builder.writeNumber(source.airdrop_id);
     builder.writeCell(source.rooms.size > 0 ? beginCell().storeDictDirect(source.rooms, Dictionary.Keys.BigInt(257), dictValueParserRoomData()).endCell() : null);
     builder.writeNumber(source.current_room_id);
-    builder.writeCell(source.winner_rewards.size > 0 ? beginCell().storeDictDirect(source.winner_rewards, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257)).endCell() : null);
-    builder.writeCell(source.claimed_rewards.size > 0 ? beginCell().storeDictDirect(source.claimed_rewards, Dictionary.Keys.BigInt(257), Dictionary.Values.BigInt(257)).endCell() : null);
+    builder.writeCell(source.winner_rewards.size > 0 ? beginCell().storeDictDirect(source.winner_rewards, Dictionary.Keys.Address(), Dictionary.Values.BigInt(257)).endCell() : null);
+    builder.writeCell(source.claimed_rewards.size > 0 ? beginCell().storeDictDirect(source.claimed_rewards, Dictionary.Keys.Address(), Dictionary.Values.BigInt(257)).endCell() : null);
     builder.writeNumber(source.HOUSE_FEE_BPS);
     builder.writeNumber(source.HOUSE_FEE_DENOMINATOR);
     return builder.build();
@@ -1077,7 +1077,7 @@ function initTreasury_init_args(src: Treasury_init_args) {
 }
 
 async function Treasury_init(owner: Address, upgrade_authority: Address) {
-    const __code = Cell.fromHex('b5ee9c7241022901000e31000110ff0020e303f2c80b0101f830eda2edfb01d072d721d200d200fa4021103450666f04f86102f862ed44d0d200018e32fa40fa40810101d700d401d0810101d700f404810101d700f404f404810101d700d430d0810101d70030107a107910786c1a8e19fa40fa405902d1016d6d6d8100fa8127107054355545645003e20b925f0be029d749c21f0204c28e8e09d31f018210946a98b6bae30209de09f9012082f090749feb14c2fda253536c99587706f062ad151ec413d58a3a06028f7cced1a7bae3022082f0f7f7c1c7a35dbbe41cbb35aa7d13ae03739219b763f8529bf693dc57abfdbec3bae302200304050800fed33f30c8018210aff90f5758cb1fcb3fc9108a10791068105710461035443012f84270705003804201503304c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54db3101ee303281303982103b9aca008064258101012459f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2816b0f016ef2f471705300f823210706050443138101015028c80701823032f8416f246c31d31ffa00d307308109bd22c200f2f482009bd521c200f2f48138aa218103e8bbf2f482009d4a23c200f2f4258101012459f40d6fa192306ddf0601b8206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2816b0f016ef2f471705300f823210706050443138101015028c80701aa55705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc922103601206e953059f45a30944133f415e210791068105710465035142804e482f01965172e995d3dfe36ccfac1fd31d9136f9e96ef54ab2dcf5e85043fc7c57a7ebae3022082f023918e6c7fc5497b05e31986ff583a99314910879bd1ccfe3a465e83c3aa8628bae3022082f078f481cc938c19046a2dbeed444b8cf7b65aa38154efdaef2a7d5dd15d2dab6cbae302200910161803f830813039248101012259f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2206ee30f206ef2d0806f288116fb26c001f2f4f8416f24135f035380814e8002bef2f48200f61a210a0c0e019430f8416f24135f032082112a05f200be993082112a05f20080198e1a821077359400be9882107735940080329882103b9aca008064e2e271705300f823218101015478765478765387c80b009a55705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc92a103f01206e953059f45a30944133f415e20c6f0801c6f8416f24135f0301206ef2d0806f282882112a05f200be982782112a05f200b99170e29b36363682112a05f20080198e2508821077359400be9826821077359400b99170e29b3582107735940036803205de50660705e281010154721554776b53dcc80d00ac55705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc92a103f01206e953059f45a30944133f415e217106c1045103441cc036f0802da821165a0bc00bbf2f4285613a85614a90420c2008ebf8870561454433070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00de5290a116a004a4810101290710691058104943185092c8120f02ba55705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9103814206e953059f45a30944133f415e201820afaf08006a15305bc923034e30d10795516142801fa30f8416f246c31d31ffa0030258101012359f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f288116fb26c001f2f4278200e4850aba19f2f41102fcf8416f24135f035370814e8002bef2f48200f61a21821165a0bc00bbf2f4275613a85614a90420c2008ebf8870561454433070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00de5280a115a003a4270610570441338101010ac81213001a00000000486f7573652046656502bc55705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc910384840206e953059f45a30944133f415e201820afaf08006a15305bc923034e30d10795516142801805005a1f84288127070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb001500220000000045786365737320726566756e6401fa30f8416f246c31d31f30248101012259f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f28308116fb05c00115f2f470f823106710571443301701b48101015088c855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9103612206e953059f45a30944133f415e210791068105710464435122804e482f03eefb0952b6918ad8b478603bade6f3639a4230c05b7f2e2282ffa77fede55e5bae3022082f098e91200d96b01eb7c70c724a4d16a71e36dd0752ec2220accce37d2ea4be77cbae3022082f0ae1f55287d6c4d2042cc5941a8a23c971d49bf5e554d4fa78ae730638e083cb7bae30220191d222301fa30f8416f246c31d31fd307268101012459f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f288200c69d06c00016f2f481416f02c00012f2f41a02fe8200f4a75385baf2f427a45280a8ab00237093530ab98ae85f03363672f823105614435010278101015028c855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9103612206e953059f45a30944133f415e2107910681057104644351b1c01ee09fa4053baa15230a824a9040a11150a0911140908111308071112070611110605111005104f103e021116020111170152d01117db3c8101012010461301111801216e955b59f45a3098c801cf004133f442e209a41114111511140211140208111308071112070611110605111005104f103e109d49c01f007612c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed5401fe30f8416f246c31d31ffa4030258101012359f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f2810565f068127e732c002f2f4109a1089107810671e03fe10561045103443bb2bdb3c81010154550052304133f40c6fa19401d70030925b6de2811851216eb3f2f47081010154560052504133f40c6fa19401d70030925b6de2206eb39631206ef2d0809130e201206ef2d08021a18200a88121c200f2f488542ee07070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40021f2021001a308130390182080f4240a801a000200000000052657761726420436c61696d01905c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb008101010da02c1045103d216e955b59f45a3098c801cf004133f442e210891078106710561045103440132800a030f8416f24135f0316a0107910680710461035443012c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54029e82f07e9a4e9c4db87f8cc634e496e2f129f07172c3894b3498755d7d69745e4ba895bae30282f07a30a75847a91ec28530dee9e62e368bbe2b319683b6acfe75a0c9337c8cc078bae3025f0af2c082242602ce307a8200bfb827c200f2f405a406ab005206a9043524c2008ebef8428841607070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb009134e21068105770071056103544302528002c00000000546f702053636f7265722041697264726f7002ba8168c9f84229c705f2f482103b9aca00f8276f10218200d92702bbf2f48829597070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb001079551627280028000000004f776e6572205769746864726177616c0074c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed5466c73a0f');
+    const __code = Cell.fromHex('b5ee9c7241021d01000a0a000110ff0020e303f2c80b0101f830eda2edfb01d072d721d200d200fa4021103450666f04f86102f862ed44d0d200018e32fa40fa40810101d700d401d0810101d700f404810101d700f404f404810101d700d430d0810101d70030107a107910786c1a8e19fa40fa405902d1016d6d6d8100fa8127107054355545645003e20b925f0be029d749c21f0203fa8e8e09d31f018210946a98b6bae30209de09f9012082f0f7f7c1c7a35dbbe41cbb35aa7d13ae03739219b763f8529bf693dc57abfdbec3ba8ec13032f8416f246c31d31ffa00d307308109bd22c200f2f482009bd521c200f2f48138aa218103e8bbf2f482009d4a23c200f2f4258101012459f40d6fa192306ddfe02003040600fed33f30c8018210aff90f5758cb1fcb3fc9108a10791068105710461035443012f84270705003804201503304c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54db3101b8206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2816b0f016ef2f471705300f823210706050443138101015028c80501aa55705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc922103601206e953059f45a30944133f415e210791068105710465035141c04e482f023918e6c7fc5497b05e31986ff583a99314910879bd1ccfe3a465e83c3aa8628bae3022082f078f481cc938c19046a2dbeed444b8cf7b65aa38154efdaef2a7d5dd15d2dab6cbae3022082f03eefb0952b6918ad8b478603bade6f3639a4230c05b7f2e2282ffa77fede55e5bae30220070e101302fa30f8416f246c31d31ffa0030258101012359f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2206ee300206ef2d0806f288116fb26c001f2f4278200e4850aba19f2f4f8416f24080900cc30806471705300f823531655608101015478765478765387c855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9102f52b0206e953059f45a30944133f415e20d6f0802f4135f035370814e8002bef2f48200f61a21821165a0bc00bbf2f4275613a85614a90420c2008ebf8870561454433070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb00de5280a115a003a4270610570441338101010ac80a0b001a00000000486f7573652046656502be55705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc910384840206e953059f45a30944133f415e201821005f5e10006a15305bc923034e30d107955160c1c01805005a1f84288127070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb000d00220000000045786365737320726566756e6401fa30f8416f246c31d31f30248101012259f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f28308116fb05c00115f2f470f823106710571443300f01b48101015088c855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9103612206e953059f45a30944133f415e210791068105710464435121c01fa30f8416f246c31d31fd307268101012459f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f288200c69d06c00016f2f481416f02c00012f2f41101b68200f4a75385baf2f427a45280a8ab00237093530ab98e2e09fa4053baa15230a824a904102f81010b02111001810101216e955b59f4593098c801cf004133f441e209a4109de85f03363672f823105614435010278101015028c81201a855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9103612206e953059f45a30944133f415e210791068105710464435121c03ea82f098e91200d96b01eb7c70c724a4d16a71e36dd0752ec2220accce37d2ea4be77cbae3022082f0ae1f55287d6c4d2042cc5941a8a23c971d49bf5e554d4fa78ae730638e083cb7bae30282f07e9a4e9c4db87f8cc634e496e2f129f07172c3894b3498755d7d69745e4ba895bae3025f0af2c08214191a01fa30f8416f246c31d31ffa403081010154461359f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f2810565f068127e732c002f2f42281010b221503fe8101014133f40a6fa19401d70030925b6de2811851216eb3f2f4702381010b248101014133f40a6fa19401d70030925b6de2206eb39631206ef2d0809130e201206ef2d08021a18200a88121c200f2f488702454433070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf818ae2f400c90116171800200000000052657761726420436c61696d001a58cf8680cf8480f400f400cf8100b8fb000181010b02a012810101216e955b59f4593098c801cf004133f441e210795516c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed5400a030f8416f24135f0316a0107910680710461035443012c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed5402cc7a8200bfb827c200f2f405a406ab005206a9043524c2008ebef8428841607070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb009134e21068105770071056103544301b1c002c00000000546f702053636f7265722041697264726f700074c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed543bcccac8');
     const builder = beginCell();
     builder.storeUint(0, 1);
     initTreasury_init_args({ $$type: 'Treasury_init_args', owner, upgrade_authority })(builder);
@@ -1130,14 +1130,12 @@ export const Treasury_errors = {
     14506: { message: "Too many winners" },
     16751: { message: "Room already paid" },
     20096: { message: "Insufficient entry fee" },
-    26825: { message: "Only owner can withdraw" },
     27407: { message: "Room already exists" },
     39893: { message: "Winners count must be positive" },
     40266: { message: "Room key must be positive" },
     43137: { message: "No remaining reward to claim" },
     49080: { message: "No airdrop pool available" },
     50845: { message: "Room is not closed" },
-    55591: { message: "Insufficient contract balance" },
     58501: { message: "Entry fee mismatch" },
     62631: { message: "Winners count mismatch" },
     63002: { message: "Excessive payment amount" },
@@ -1188,14 +1186,12 @@ export const Treasury_errors_backward = {
     "Too many winners": 14506,
     "Room already paid": 16751,
     "Insufficient entry fee": 20096,
-    "Only owner can withdraw": 26825,
     "Room already exists": 27407,
     "Winners count must be positive": 39893,
     "Room key must be positive": 40266,
     "No remaining reward to claim": 43137,
     "No airdrop pool available": 49080,
     "Room is not closed": 50845,
-    "Insufficient contract balance": 55591,
     "Entry fee mismatch": 58501,
     "Winners count mismatch": 62631,
     "Excessive payment amount": 63002,
@@ -1218,7 +1214,7 @@ const Treasury_types: ABIType[] = [
     {"name":"RoomData","header":null,"fields":[{"name":"entry_fee","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"winners_count","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"status","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"pool","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"total_entries","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"paid_hash","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"created_at","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"closed_at","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
     {"name":"OpenRoomMessage","header":null,"fields":[{"name":"room_key","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"entry_fee","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"winners_count","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
     {"name":"EnterRoomMessage","header":null,"fields":[{"name":"room_key","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"entry_fee","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
-    {"name":"Treasury$Data","header":null,"fields":[{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"upgrade_authority","type":{"kind":"simple","type":"address","optional":false}},{"name":"airdrop_pool","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"airdrop_id","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"rooms","type":{"kind":"dict","key":"int","value":"RoomData","valueFormat":"ref"}},{"name":"current_room_id","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"winner_rewards","type":{"kind":"dict","key":"int","value":"int"}},{"name":"claimed_rewards","type":{"kind":"dict","key":"int","value":"int"}},{"name":"HOUSE_FEE_BPS","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"HOUSE_FEE_DENOMINATOR","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
+    {"name":"Treasury$Data","header":null,"fields":[{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"upgrade_authority","type":{"kind":"simple","type":"address","optional":false}},{"name":"airdrop_pool","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"airdrop_id","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"rooms","type":{"kind":"dict","key":"int","value":"RoomData","valueFormat":"ref"}},{"name":"current_room_id","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"winner_rewards","type":{"kind":"dict","key":"address","value":"int"}},{"name":"claimed_rewards","type":{"kind":"dict","key":"address","value":"int"}},{"name":"HOUSE_FEE_BPS","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"HOUSE_FEE_DENOMINATOR","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
 ]
 
 const Treasury_opcodes = {
@@ -1234,16 +1230,13 @@ export const Treasury_getterMapping: { [key: string]: string } = {
 }
 
 const Treasury_receivers: ABIReceiver[] = [
-    {"receiver":"internal","message":{"kind":"text","text":"open_room"}},
     {"receiver":"internal","message":{"kind":"text","text":"open_room_params"}},
-    {"receiver":"internal","message":{"kind":"text","text":"enter_paid"}},
     {"receiver":"internal","message":{"kind":"text","text":"enter_room_params"}},
     {"receiver":"internal","message":{"kind":"text","text":"close_room_params"}},
     {"receiver":"internal","message":{"kind":"text","text":"distribute_payouts_params"}},
     {"receiver":"internal","message":{"kind":"text","text":"claim_reward_params"}},
     {"receiver":"internal","message":{"kind":"text","text":"fund_airdrop"}},
     {"receiver":"internal","message":{"kind":"text","text":"distribute_airdrop"}},
-    {"receiver":"internal","message":{"kind":"text","text":"withdraw_owner"}},
     {"receiver":"internal","message":{"kind":"typed","type":"Deploy"}},
 ]
 
@@ -1282,16 +1275,10 @@ export class Treasury implements Contract {
         this.init = init;
     }
     
-    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: "open_room" | "open_room_params" | "enter_paid" | "enter_room_params" | "close_room_params" | "distribute_payouts_params" | "claim_reward_params" | "fund_airdrop" | "distribute_airdrop" | "withdraw_owner" | Deploy) {
+    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: "open_room_params" | "enter_room_params" | "close_room_params" | "distribute_payouts_params" | "claim_reward_params" | "fund_airdrop" | "distribute_airdrop" | Deploy) {
         
         let body: Cell | null = null;
-        if (message === "open_room") {
-            body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
-        }
         if (message === "open_room_params") {
-            body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
-        }
-        if (message === "enter_paid") {
             body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
         }
         if (message === "enter_room_params") {
@@ -1310,9 +1297,6 @@ export class Treasury implements Contract {
             body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
         }
         if (message === "distribute_airdrop") {
-            body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
-        }
-        if (message === "withdraw_owner") {
             body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
         }
         if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'Deploy') {

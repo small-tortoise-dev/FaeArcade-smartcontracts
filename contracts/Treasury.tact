@@ -40,8 +40,8 @@ contract Treasury with Deployable {
     current_room_id: Int;
     
     // Winner rewards tracking (pull-based payouts) - simplified approach
-    winner_rewards: map<Int, Int>; // composite key: room_key * 1000000 + winner_address_hash -> reward_amount
-    claimed_rewards: map<Int, Int>; // composite key: room_key * 1000000 + winner_address_hash -> claimed_amount
+    winner_rewards: map<Address, Int>; // winner_address -> reward_amount (per room)
+    claimed_rewards: map<Address, Int>; // winner_address -> claimed_amount (per room)
     
     // Constants
     HOUSE_FEE_BPS: Int = 250; // 2.5%
@@ -58,37 +58,6 @@ contract Treasury with Deployable {
     
     // External message handlers
     
-    // Open a new room with dynamic parameters (text message)
-    receive("open_room") {
-        // For text messages, create a default room with key 12345
-        let room_key: Int = 12345;
-        let entry_fee: Int = ton("1.0"); // 1.0 TON entry fee (matches frontend)
-        let winners_count: Int = 100; // 100 winners
-        
-        // Validate parameters
-        require(entry_fee > 0, "Entry fee must be positive");
-        require(winners_count > 0, "Winners count must be positive");
-        require(winners_count <= 1000, "Too many winners");
-        
-        // Check if room already exists
-        let existing_room: RoomData? = self.rooms.get(room_key);
-        require(existing_room == null, "Room already exists");
-        
-        // Create new room
-        let new_room: RoomData = RoomData{
-            entry_fee: entry_fee,
-            winners_count: winners_count,
-            status: 1, // Open
-            pool: 0,
-            total_entries: 0,
-            paid_hash: 0,
-            created_at: now(),
-            closed_at: 0
-        };
-        
-        self.rooms.set(room_key, new_room);
-        self.current_room_id = room_key;
-    }
     
     // Open room with specific parameters (text message with parameters)
     receive("open_room_params") {
@@ -124,119 +93,6 @@ contract Treasury with Deployable {
         self.current_room_id = room_key;
     }
     
-    // User enters a paid room (text message)
-    receive("enter_paid") {
-        // For simple "enter_paid" messages, use default room (12345)
-        let room_key: Int = 12345;
-        
-        // Get room data
-        let room: RoomData? = self.rooms.get(room_key);
-        
-        // If room doesn't exist, create it automatically with parameters based on amount sent
-        if (room == null) {
-            let received_amount: Int = context().value;
-            let entry_fee: Int = ton("1.0");
-            let winners_count: Int = 100;
-            
-            // Determine entry fee and winners based on amount sent
-            if (received_amount >= ton("5.0")) {
-                // High risk: 5.0+ TON
-                entry_fee = ton("5.0");
-                winners_count = 25;
-            } else if (received_amount >= ton("2.0")) {
-                // Medium risk: 2.0+ TON
-                entry_fee = ton("2.0");
-                winners_count = 50;
-            } else {
-                // Low risk: 1.0+ TON
-                entry_fee = ton("1.0");
-                winners_count = 100;
-            }
-            
-            let new_room: RoomData = RoomData{
-                entry_fee: entry_fee,
-                winners_count: winners_count,
-                status: 1, // Open
-                pool: 0,
-                total_entries: 0,
-                paid_hash: 0,
-                created_at: now(),
-                closed_at: 0
-            };
-            self.rooms.set(room_key, new_room);
-            room = new_room;
-        } else {
-            // Room exists, but update entry fee based on amount sent if needed
-            let received_amount: Int = context().value;
-            let room_data: RoomData = room!!;
-            
-            // Update room parameters based on amount sent
-            if (received_amount >= ton("5.0") && room_data.entry_fee < ton("5.0")) {
-                // Upgrade to high risk
-                room_data.entry_fee = ton("5.0");
-                room_data.winners_count = 25;
-            } else if (received_amount >= ton("2.0") && room_data.entry_fee < ton("2.0")) {
-                // Upgrade to medium risk
-                room_data.entry_fee = ton("2.0");
-                room_data.winners_count = 50;
-            }
-            
-            self.rooms.set(room_key, room_data);
-            room = room_data;
-        }
-        
-        let room_data: RoomData = room!!;
-        require(room_data.status == 1, "Room is not open");
-        
-        // Validate entry fee
-        let received_amount: Int = context().value;
-        let min_gas_fee: Int = ton("0.05");
-        let max_gas_fee: Int = ton("0.1");
-        let min_required: Int = room_data.entry_fee;
-        let max_required: Int = room_data.entry_fee + max_gas_fee;
-        
-        require(received_amount >= min_required, "Insufficient entry fee");
-        // Allow up to 6.0 TON to accommodate high risk tier (5.0 TON) + gas fees
-        require(received_amount <= ton("6.0"), "Excessive payment amount");
-        
-        // Calculate house fee (2.5%)
-        let house_fee: Int = (room_data.entry_fee * self.HOUSE_FEE_BPS) / self.HOUSE_FEE_DENOMINATOR;
-        
-        // Send house fee to owner wallet immediately
-        if (house_fee > 0) {
-            send(SendParameters{
-                to: self.owner,
-                value: house_fee,
-                body: "House Fee".asComment(),
-                bounce: false
-            });
-        }
-        
-        // Add 97.5% to room pool
-        let pool_contribution: Int = room_data.entry_fee - house_fee;
-        
-        // Update room data
-        room_data.pool = room_data.pool + pool_contribution;
-        room_data.total_entries = room_data.total_entries + 1;
-        
-        self.rooms.set(room_key, room_data);
-        
-        // Refund excess if any (accounting for gas fees already deducted by network)
-        // Gas fees are typically 0.003-0.01 TON, so we estimate 0.05 TON for safety
-        let estimated_gas_fee: Int = ton("0.05");
-        let excess_amount: Int = received_amount - room_data.entry_fee;
-        
-        // Only refund if we received significantly more than expected (more than 0.05 TON excess)
-        if (excess_amount > estimated_gas_fee) {
-            let refund_amount: Int = excess_amount - estimated_gas_fee;
-            send(SendParameters{
-                to: context().sender,
-                value: refund_amount,
-                body: "Excess refund".asComment(),
-                bounce: false
-            });
-        }
-    }
     
     // User enters a paid room with specific parameters (text message with parameters)
     receive("enter_room_params") {
@@ -247,7 +103,23 @@ contract Treasury with Deployable {
         
         // Get room data
         let room: RoomData? = self.rooms.get(room_key);
-        require(room != null, "Room not found");
+        
+        // If room doesn't exist, create it automatically
+        if (room == null) {
+            // Create new room with the expected parameters
+            let new_room: RoomData = RoomData{
+                entry_fee: expected_entry_fee,
+                winners_count: 100, // Default winners count
+                status: 1, // Open
+                pool: 0,
+                total_entries: 0,
+                paid_hash: 0,
+                created_at: now(),
+                closed_at: 0
+            };
+            self.rooms.set(room_key, new_room);
+            room = new_room;
+        }
         
         let room_data: RoomData = room!!;
         require(room_data.status == 1, "Room is not open");
@@ -287,11 +159,11 @@ contract Treasury with Deployable {
         self.rooms.set(room_key, room_data);
         
         // Refund excess if any (accounting for gas fees already deducted by network)
-        // Gas fees are typically 0.003-0.01 TON, so we estimate 0.05 TON for safety
-        let estimated_gas_fee: Int = ton("0.05");
+        // Gas fees are typically 0.003-0.01 TON, so we estimate 0.1 TON for safety
+        let estimated_gas_fee: Int = ton("0.1");
         let excess_amount: Int = received_amount - room_data.entry_fee;
         
-        // Only refund if we received significantly more than expected (more than 0.05 TON excess)
+        // Only refund if we received significantly more than expected (more than 0.1 TON excess)
         if (excess_amount > estimated_gas_fee) {
             let refund_amount: Int = excess_amount - estimated_gas_fee;
             send(SendParameters{
@@ -323,30 +195,6 @@ contract Treasury with Deployable {
         self.rooms.set(room_key, room_data);
     }
     
-    // Helper functions for composite keys
-    fun getCompositeKey(room_key: Int, winner_address: Address): Int {
-        // Convert address to a simple hash for composite key
-        // For simplicity, we'll use a fixed offset based on the address
-        let address_offset: Int = 12345; // Fixed offset for demo
-        return room_key * 1000000 + address_offset;
-    }
-    
-    // Generate daily room key based on date and risk tier
-    fun generateDailyRoomKey(day: Int, risk_tier: Int): Int {
-        // Format: YYYYMMDD + risk_tier
-        // day format: YYYYMMDD (e.g., 20250101)
-        return day * 10 + risk_tier;
-    }
-    
-    // Get risk tier from room key
-    fun getRiskTierFromRoomKey(room_key: Int): Int {
-        return room_key % 10;
-    }
-    
-    // Get day from room key
-    fun getDayFromRoomKey(room_key: Int): Int {
-        return room_key / 10;
-    }
     
     // Distribute payouts with linear weights (pull-based) - text message with parameters
     receive("distribute_payouts_params") {
@@ -377,9 +225,8 @@ contract Treasury with Deployable {
             // Calculate reward amount
             let reward_amount: Int = (remaining_pool * weight) / total_weight;
             
-            // Store reward for later claiming using composite key
-            let composite_key: Int = self.getCompositeKey(room_key, winner_address);
-            self.winner_rewards.set(composite_key, reward_amount);
+            // Store reward for later claiming using direct address mapping
+            self.winner_rewards.set(winner_address, reward_amount);
             
             i = i + 1;
         }
@@ -404,14 +251,13 @@ contract Treasury with Deployable {
         let room_data: RoomData = room!!;
         require(room_data.status == 2, "Room is not paid");
         
-        // Get winner rewards using composite key
-        let composite_key: Int = self.getCompositeKey(room_key, winner_address);
-        let reward_amount: Int? = self.winner_rewards.get(composite_key);
+        // Get winner rewards using direct address mapping
+        let reward_amount: Int? = self.winner_rewards.get(winner_address);
         require(reward_amount != null, "No reward for this address");
         
         // Check if already claimed
         let already_claimed: Int = 0;
-        let claimed_amount: Int? = self.claimed_rewards.get(composite_key);
+        let claimed_amount: Int? = self.claimed_rewards.get(winner_address);
         if (claimed_amount != null) {
             already_claimed = claimed_amount!!;
         }
@@ -428,7 +274,7 @@ contract Treasury with Deployable {
         });
         
         // Update claimed amount
-        self.claimed_rewards.set(composite_key, already_claimed + remaining_reward);
+        self.claimed_rewards.set(winner_address, already_claimed + remaining_reward);
     }
     
     // Fund the airdrop pool
@@ -477,21 +323,6 @@ contract Treasury with Deployable {
         self.airdrop_pool = 0;
     }
     
-    // Owner withdrawal
-    receive("withdraw_owner") {
-        require(context().sender == self.owner, "Only owner can withdraw");
-        
-        let withdrawal_amount: Int = ton("1");
-        let contract_balance: Int = myBalance();
-        require(withdrawal_amount <= contract_balance, "Insufficient contract balance");
-        
-        send(SendParameters{
-            to: self.owner,
-            value: withdrawal_amount,
-            body: "Owner Withdrawal".asComment(),
-            bounce: false
-        });
-    }
     
     // Getter functions for contract state
     fun getOwner(): Address {
@@ -527,12 +358,10 @@ contract Treasury with Deployable {
     }
     
     fun getWinnerReward(room_key: Int, winner_address: Address): Int? {
-        let composite_key: Int = self.getCompositeKey(room_key, winner_address);
-        return self.winner_rewards.get(composite_key);
+        return self.winner_rewards.get(winner_address);
     }
     
     fun getClaimedReward(room_key: Int, winner_address: Address): Int? {
-        let composite_key: Int = self.getCompositeKey(room_key, winner_address);
-        return self.claimed_rewards.get(composite_key);
+        return self.claimed_rewards.get(winner_address);
     }
 }
