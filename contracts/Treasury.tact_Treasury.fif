@@ -23,6 +23,7 @@ PROGRAM{
   DECLPROC $Treasury$_contract_init
   DECLPROC $Treasury$_contract_load
   DECLPROC $Treasury$_contract_store
+  DECLPROC $Treasury$_fun_parseTextMessage
   DECLPROC $MessageParameters$_constructor_bounce_to_value_mode_body
   DECLPROC $Treasury$_fun_notify
   DECLPROC $DeployOk$_constructor_queryId
@@ -300,6 +301,14 @@ PROGRAM{
     ENDC
     c4 POP
   }>
+  $Treasury$_fun_parseTextMessage PROCREF:<{
+    SWAP
+    32 PUSHINT
+        SDSKIPFIRST
+    SWAP
+    3 LSHIFT#
+        SDSKIPFIRST
+  }>
   $MessageParameters$_constructor_bounce_to_value_mode_body PROCINLINE:<{
     s3 s3 XCHG2
     s0 s4 XCHG
@@ -401,9 +410,20 @@ PROGRAM{
     EQUAL
     IFJMP:<{
       DROP
-      s2 POP
       __tact_context_get INLINECALLDICT
       $Context$_get_raw INLINECALLDICT
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      s5 s7 XCHG
+      s4 s6 XCHG
+      s3 s5 XCHG
+      s4 s3 s0 XCHG3
+      s1 s2 XCHG
+      16 PUSHINT
+      $Treasury$_fun_parseTextMessage INLINECALLDICT
+      s5 POP
+      s0 s4 XCHG
       32 LDU
           LDVARUINT16
       8 LDU
@@ -425,7 +445,7 @@ PROGRAM{
       s3 PUSH
       0 GTINT
       THROWANYIFNOT
-      s5 PUSH
+      s7 PUSH
       257 PUSHINT
       s4 PUSH
       __tact_dict_get_int_cell INLINECALLDICT
@@ -450,15 +470,11 @@ PROGRAM{
       NEWC
       $RoomData$_store_cell INLINECALLDICT
       s2 PUSH
-      s3 s6 XCHG
+      s3 s8 XCHG
       SWAP
       __tact_dict_set_int_cell INLINECALLDICT
-      s7 s9 XCHG
-      s6 s8 XCHG
-      s5 s7 XCHG
-      s4 s6 XCHG
-      s3 s5 XCHG2
-      s1 s4 XCHG
+      s0 s5 XCHG
+      s0 s4 XCHG
       $Treasury$_contract_store INLINECALLDICT
     }>
     DUP
@@ -468,10 +484,20 @@ PROGRAM{
       DROP
       __tact_context_get INLINECALLDICT
       $Context$_get_raw INLINECALLDICT
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      s5 s7 XCHG
+      s4 s6 XCHG
+      s3 s5 XCHG
+      s4 s3 s0 XCHG3
+      s1 s2 XCHG
+      17 PUSHINT
+      $Treasury$_fun_parseTextMessage INLINECALLDICT
       32 LDU
           LDVARUINT16
       DROP
-      s5 PUSH
+      s7 PUSH
       257 PUSHINT
       s3 PUSH
       __tact_dict_get_int_cell INLINECALLDICT
@@ -494,10 +520,10 @@ PROGRAM{
         s8 s7 PUSH2
         NEWC
         $RoomData$_store_cell INLINECALLDICT
-        s2 s15 XCHG
+        s2 17 s() XCHG
         s11 s(-1) PUXC
         __tact_dict_set_int_cell INLINECALLDICT
-        s0 s13 XCHG
+        s0 s15 XCHG
         $RoomData$_as_optional INLINECALLDICT
       }>
       $RoomData$_not_null INLINECALLDICT
@@ -513,27 +539,30 @@ PROGRAM{
       THROWANYIFNOT
       __tact_context_get INLINECALLDICT
       $Context$_get_value INLINECALLDICT
-      s7 s0 PUSH2
+      s7 s7 PUSH2
+      100000000 PUSHINT
+      ADD
+      s2 PUSH
       20096 PUSHINT
-      s0 s2 XCHG
+      s0 s3 XCHG
       GEQ
+      s1 s2 XCHG
       THROWANYIFNOT
+      SWAP
       63002 PUSHINT
-      OVER
-      6000000000 PUSHINT
+      s0 s2 XCHG
       LEQ
       THROWANYIFNOT
-      s7 PUSH
-      19 s() PUSH
+      s6 s10 PUSH2
       MUL
-      20 s() PUSH
+      s10 PUSH
       DIV
       DUP
       0 GTINT
       IF:<{
             B{b5ee9c7241010101000f00001a00000000486f7573652046656509a96100} B>boc PUSHREF
         FALSE
-        20 s() PUSH
+        21 s() PUSH
         s3 s2 s(-1) PUXC2
         $SendParameters$_constructor_to_value_body_bounce INLINECALLDICT
             NEWC
@@ -603,110 +632,21 @@ PROGRAM{
             SWAP
             SENDRAWMSG // https://github.com/tact-lang/tact/issues/1558
       }>
-      s8 s(-1) PUXC
+      s7 s(-1) PUXC
       SUB
-      s1 s5 XCHG
+      s1 s4 XCHG
       ADD
-      s0 s3 XCHG
+      s0 s2 XCHG
       INC
-      s7 PUSH
-      s0 s6 XCHG
-      s5 s7 XCHG
-      s0 s4 XCHG
-      s1 s3 s3 XCHG3
+      s0 s2 XCHG
       257 PUSHINT
-      s0 s10 XCHG
+      s4 s8 XCHG2
       NEWC
       $RoomData$_store_cell INLINECALLDICT
       s3 s8 XCHG
-      s8 s4 s0 XCHG3
+      s1 s2 XCHG
       __tact_dict_set_int_cell INLINECALLDICT
-      SWAP
-      100000000 PUSHINT
-      s0 s6 XCHG
-      SUB
-      s0 s5 PUSH2
-      GREATER
-      IF:<{
-        s0 s5 XCHG2
-        SUB
-        __tact_context_get_sender INLINECALLDICT
-            B{b5ee9c724101010100130000220000000045786365737320726566756e64bdb5887c} B>boc PUSHREF
-        s1 s2 XCHG
-        FALSE
-        $SendParameters$_constructor_to_value_body_bounce INLINECALLDICT
-            NEWC
-            b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
-            1 STI               // store `bounce`
-            b{000} STSLICECONST // store bounced = false and src = addr_none
-            STSLICE             // store `to`
-            SWAP
-            STGRAMS             // store `value`
-            105 PUSHINT         // 1 + 4 + 4 + 64 + 32
-            STZEROES            // store currency_collection, ihr_fee, fwd_fee, created_lt and created_at
-            // → Stack state
-            // s0: Builder
-            // s1: `data`
-            // s2: `code`
-            // s3: `body`
-            // s4: `mode`
-            // Group 2: Placing the Builder after code and data, then checking those for nullability
-            s2 XCHG0
-            DUP2
-            ISNULL
-            SWAP
-            ISNULL
-            AND
-            // → Stack state
-            // s0: -1 (true) if `data` and `code` are both null, 0 (false) otherwise
-            // s1: `code`
-            // s2: `data`
-            // s3: Builder
-            // s4: `body`
-            // s5: `mode`
-            // Group 3: Left branch of the IFELSE, executed if s0 is -1 (true)
-            <{
-                DROP2 // drop `data` and `code`, since either of those is null
-                b{0} STSLICECONST
-            }> PUSHCONT
-            // Group 3: Right branch of the IFELSE, executed if s0 is 0 (false)
-            <{
-                // _ split_depth:(Maybe (## 5))
-                //   special:(Maybe TickTock)
-                //   code:(Maybe ^Cell)
-                //   data:(Maybe ^Cell)
-                //   library:(Maybe ^Cell)
-                // = StateInit;
-                ROT                // place message Builder on top
-                b{10} STSLICECONST // store Maybe = true, Either = false
-                // Start composing inlined StateInit
-                b{00} STSLICECONST // store split_depth and special first
-                STDICT             // store code
-                STDICT             // store data
-                b{0} STSLICECONST  // store library
-            }> PUSHCONT
-            // Group 3: IFELSE that does the branching shown above
-            IFELSE
-            // → Stack state
-            // s0: Builder
-            // s1: null or StateInit
-            // s2: `body`
-            // s3: `mode`
-            // Group 4: Finalizing the message
-            STDICT // store `body` as ref with an extra Maybe bit, since `body` might be null
-            ENDC
-            // → Stack state
-            // s0: Cell
-            // s1: `mode`
-            // Group 5: Sending the message, with `mode` on top
-            SWAP
-            SENDRAWMSG // https://github.com/tact-lang/tact/issues/1558
-      }>ELSE<{
-        DROP
-        s4 POP
-      }>
-      s7 s9 XCHG
-      2 7 BLKSWAP
+      s0 s5 XCHG
       $Treasury$_contract_store INLINECALLDICT
     }>
     DUP
@@ -716,9 +656,19 @@ PROGRAM{
       DROP
       __tact_context_get INLINECALLDICT
       $Context$_get_raw INLINECALLDICT
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      s5 s7 XCHG
+      s4 s6 XCHG
+      s3 s5 XCHG
+      s4 s3 s0 XCHG3
+      s1 s2 XCHG
+      17 PUSHINT
+      $Treasury$_fun_parseTextMessage INLINECALLDICT
       32 LDU
       DROP
-      s4 PUSH
+      s6 PUSH
       257 PUSHINT
       s2 PUSH
       __tact_dict_get_int_cell INLINECALLDICT
@@ -745,15 +695,10 @@ PROGRAM{
       s8 s8 XCHG2
       NEWC
       $RoomData$_store_cell INLINECALLDICT
-      s3 s6 XCHG
+      s3 s8 XCHG
       s1 s2 XCHG
       __tact_dict_set_int_cell INLINECALLDICT
-      s7 s9 XCHG
-      s6 s8 XCHG
-      s5 s7 XCHG
-      s4 s6 XCHG
-      s4 s3 s5 XCHG3
-      s1 s2 XCHG
+      s0 s5 XCHG
       $Treasury$_contract_store INLINECALLDICT
     }>
     DUP
@@ -763,9 +708,19 @@ PROGRAM{
       DROP
       __tact_context_get INLINECALLDICT
       $Context$_get_raw INLINECALLDICT
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      s5 s7 XCHG
+      s4 s6 XCHG
+      s3 s5 XCHG
+      s4 s3 s0 XCHG3
+      s1 s2 XCHG
+      24 PUSHINT
+      $Treasury$_fun_parseTextMessage INLINECALLDICT
       32 LDU
       8 LDU
-      s6 PUSH
+      s8 PUSH
       257 PUSHINT
       s4 PUSH
       __tact_dict_get_int_cell INLINECALLDICT
@@ -809,16 +764,16 @@ PROGRAM{
         MUL
         s4 PUSH
         DIV
-        s2 s15 XCHG
+        s2 17 s() XCHG
         267 PUSHINT
         s0 s2 XCHG
-        s0 16 s() XCHG
+        s0 18 s() XCHG
         SWAP
         257 PUSHINT
         __tact_dict_set_slice_int INLINECALLDICT
         s0 s9 XCHG
         INC
-        s9 s13 XCHG
+        s9 s15 XCHG
       }>
       3 BLKDROP
       s6 POP
@@ -833,15 +788,10 @@ PROGRAM{
       s2 s8 XCHG2
       NEWC
       $RoomData$_store_cell INLINECALLDICT
-      s3 s6 XCHG
+      s3 s8 XCHG
       s1 s2 XCHG
       __tact_dict_set_int_cell INLINECALLDICT
-      s7 s9 XCHG
-      s6 s8 XCHG
-      s5 s7 XCHG
-      s4 s6 XCHG
-      s4 s3 s5 XCHG3
-      s1 s2 XCHG
+      s0 s5 XCHG
       $Treasury$_contract_store INLINECALLDICT
     }>
     DUP
@@ -851,11 +801,21 @@ PROGRAM{
       DROP
       __tact_context_get INLINECALLDICT
       $Context$_get_raw INLINECALLDICT
+      s8 s10 XCHG
+      s7 s9 XCHG
+      s6 s8 XCHG
+      s5 s7 XCHG
+      s4 s6 XCHG
+      s3 s5 XCHG
+      s4 s3 s0 XCHG3
+      s1 s2 XCHG
+      19 PUSHINT
+      $Treasury$_fun_parseTextMessage INLINECALLDICT
       32 LDU
           LDMSGADDR
       DROP
       257 PUSHINT
-      s6 s0 s2 PUXC2
+      s8 s0 s2 PUXC2
       __tact_dict_get_int_cell INLINECALLDICT
       $RoomData$_load_opt INLINECALLDICT
       14103 PUSHINT
@@ -870,7 +830,7 @@ PROGRAM{
       s2 POP
       2 EQINT
       THROWANYIFNOT
-      s2 PUSH
+      s4 PUSH
       267 PUSHINT
       s2 PUSH
       257 PUSHINT
@@ -881,7 +841,7 @@ PROGRAM{
       NOT
       THROWANYIFNOT
       0 PUSHINT
-      s3 PUSH
+      s5 PUSH
       267 PUSHINT
       s4 PUSH
       257 PUSHINT
@@ -978,11 +938,11 @@ PROGRAM{
       267 PUSHINT
       s0 s2 XCHG
       ADD
+      s3 s5 XCHG
       s1 s2 XCHG
       257 PUSHINT
       __tact_dict_set_slice_int INLINECALLDICT
-      s7 s9 XCHG
-      2 7 BLKSWAP
+      s0 s2 XCHG
       $Treasury$_contract_store INLINECALLDICT
     }>
     DUP

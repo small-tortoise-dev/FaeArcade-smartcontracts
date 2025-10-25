@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: Treasury
-BoC Size: 2582 bytes
+BoC Size: 2558 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 17

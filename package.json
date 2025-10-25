@@ -8,8 +8,8 @@
     "deploy": "tsx scripts/deploy.ts",
     "deploy:testnet": "tsx scripts/deploy.ts --network testnet",
     "deploy:mainnet": "tsx scripts/deploy.ts --network mainnet",
-    "deploy:treasury": "tsx scripts/deployTreasury.ts",
-    "deploy:new-owner": "tsx scripts/deployNewOwner.ts",
+    "deploy:upgradable": "tsx scripts/deploy-upgradable.ts",
+    "check:status": "tsx scripts/check-status.ts",
     "script": "tsx",
     "clean": "rimraf build dist"
   },

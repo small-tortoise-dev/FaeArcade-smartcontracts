@@ -54,10 +54,11 @@ export class Treasury implements Contract {
     winnersCount: number
   ) {
     const body = beginCell()
-      .storeUint(0, 32) // op code
-      .storeUint(roomKey, 32)
-      .storeCoins(entryFee)
-      .storeUint(winnersCount, 8)
+      .storeUint(0, 32) // op code for text message
+      .storeStringTail("open_room_params") // text message (matches contract handler)
+      .storeUint(roomKey, 32) // room key
+      .storeCoins(entryFee) // entry fee
+      .storeUint(winnersCount, 8) // winners count
       .endCell()
 
     await provider.internal(via, {
@@ -70,11 +71,14 @@ export class Treasury implements Contract {
     provider: ContractProvider,
     via: Sender,
     value: bigint,
-    roomKey: number
+    roomKey: number,
+    entryFee: bigint
   ) {
     const body = beginCell()
-      .storeUint(0, 32) // op code
-      .storeUint(roomKey, 32)
+      .storeUint(0, 32) // op code for text message
+      .storeStringTail("enter_room_params") // text message (matches contract handler)
+      .storeUint(roomKey, 32) // room key
+      .storeCoins(entryFee) // entry fee
       .endCell()
 
     await provider.internal(via, {
@@ -90,8 +94,9 @@ export class Treasury implements Contract {
     roomKey: number
   ) {
     const body = beginCell()
-      .storeUint(0, 32) // op code
-      .storeUint(roomKey, 32)
+      .storeUint(0, 32) // op code for text message
+      .storeStringTail("close_room_params") // text message (matches contract handler)
+      .storeUint(roomKey, 32) // room key
       .endCell()
 
     await provider.internal(via, {
@@ -108,13 +113,15 @@ export class Treasury implements Contract {
     winners: Array<{ address: Address; weight: number }>
   ) {
     const body = beginCell()
-      .storeUint(0, 32) // op code
-      .storeUint(roomKey, 32)
-      .storeUint(winners.length, 8)
+      .storeUint(0, 32) // op code for text message
+      .storeStringTail("distribute_payouts_params") // text message (matches contract handler)
+      .storeUint(roomKey, 32) // room key
+      .storeUint(winners.length, 8); // winners count
 
-    // Add winner addresses
+    // Add winner addresses and weights
     for (const winner of winners) {
-      body.storeAddress(winner.address)
+      body.storeAddress(winner.address);
+      body.storeUint(winner.weight, 8);
     }
 
     await provider.internal(via, {
@@ -131,9 +138,10 @@ export class Treasury implements Contract {
     winnerAddress: Address
   ) {
     const body = beginCell()
-      .storeUint(0, 32) // op code
-      .storeUint(roomKey, 32)
-      .storeAddress(winnerAddress)
+      .storeUint(0, 32) // op code for text message
+      .storeStringTail("claim_reward_params") // text message (matches contract handler)
+      .storeUint(roomKey, 32) // room key
+      .storeAddress(winnerAddress) // winner address
       .endCell()
 
     await provider.internal(via, {

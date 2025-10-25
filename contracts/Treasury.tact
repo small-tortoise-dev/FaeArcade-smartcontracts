@@ -56,13 +56,22 @@ contract Treasury with Deployable {
         self.current_room_id = 0;
     }
     
+    // Helper function to parse text message parameters
+    fun parseTextMessage(slice: Slice, textLength: Int): Slice {
+        slice.skipBits(32); // Skip opcode
+        slice.skipBits(textLength * 8); // Skip text content
+        return slice;
+    }
+    
     // External message handlers
     
     
     // Open room with specific parameters (text message with parameters)
     receive("open_room_params") {
         // Parse message body for parameters using context().raw
-        let slice = context().raw;
+        let slice = self.parseTextMessage(context().raw, 16); // "open_room_params" is 16 characters
+        
+        // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
         let entry_fee: Int = slice.loadCoins();
         let winners_count: Int = slice.loadUint(8);
@@ -97,7 +106,9 @@ contract Treasury with Deployable {
     // User enters a paid room with specific parameters (text message with parameters)
     receive("enter_room_params") {
         // Parse message body for parameters using context().raw
-        let slice = context().raw;
+        let slice = self.parseTextMessage(context().raw, 17); // "enter_room_params" is 17 characters
+        
+        // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
         let expected_entry_fee: Int = slice.loadCoins();
         
@@ -125,16 +136,13 @@ contract Treasury with Deployable {
         require(room_data.status == 1, "Room is not open");
         require(room_data.entry_fee == expected_entry_fee, "Entry fee mismatch");
         
-        // Validate entry fee
+        // Validate entry fee - contract should receive exactly the entry fee
         let received_amount: Int = context().value;
-        let min_gas_fee: Int = ton("0.05");
-        let max_gas_fee: Int = ton("0.1");
         let min_required: Int = room_data.entry_fee;
-        let max_required: Int = room_data.entry_fee + max_gas_fee;
+        let max_required: Int = room_data.entry_fee + ton("0.1"); // Allow small gas buffer
         
         require(received_amount >= min_required, "Insufficient entry fee");
-        // Allow up to 6.0 TON to accommodate high risk tier (5.0 TON) + gas fees
-        require(received_amount <= ton("6.0"), "Excessive payment amount");
+        require(received_amount <= max_required, "Excessive payment amount");
         
         // Calculate house fee (2.5%)
         let house_fee: Int = (room_data.entry_fee * self.HOUSE_FEE_BPS) / self.HOUSE_FEE_DENOMINATOR;
@@ -158,27 +166,16 @@ contract Treasury with Deployable {
         
         self.rooms.set(room_key, room_data);
         
-        // Refund excess if any (accounting for gas fees already deducted by network)
-        // Gas fees are typically 0.003-0.01 TON, so we estimate 0.1 TON for safety
-        let estimated_gas_fee: Int = ton("0.1");
-        let excess_amount: Int = received_amount - room_data.entry_fee;
-        
-        // Only refund if we received significantly more than expected (more than 0.1 TON excess)
-        if (excess_amount > estimated_gas_fee) {
-            let refund_amount: Int = excess_amount - estimated_gas_fee;
-            send(SendParameters{
-                to: context().sender,
-                value: refund_amount,
-                body: "Excess refund".asComment(),
-                bounce: false
-            });
-        }
+        // No refunds needed - gas is handled by the network
+        // The contract receives exactly the entry fee amount
     }
     
     // Close a room (text message with parameters)
     receive("close_room_params") {
         // Parse message body for room key using context().raw
-        let slice = context().raw;
+        let slice = self.parseTextMessage(context().raw, 17); // "close_room_params" is 17 characters
+        
+        // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
         
         // Get room data
@@ -199,7 +196,9 @@ contract Treasury with Deployable {
     // Distribute payouts with linear weights (pull-based) - text message with parameters
     receive("distribute_payouts_params") {
         // Parse message body for parameters using context().raw
-        let slice = context().raw;
+        let slice = self.parseTextMessage(context().raw, 24); // "distribute_payouts_params" is 24 characters
+        
+        // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
         let winners_count: Int = slice.loadUint(8);
         
@@ -240,7 +239,9 @@ contract Treasury with Deployable {
     // Claim reward (pull-based) - text message with parameters
     receive("claim_reward_params") {
         // Parse message body for parameters using context().raw
-        let slice = context().raw;
+        let slice = self.parseTextMessage(context().raw, 19); // "claim_reward_params" is 19 characters
+        
+        // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
         let winner_address: Address = slice.loadAddress();
         
