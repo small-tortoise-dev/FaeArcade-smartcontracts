@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: Treasury
-BoC Size: 2558 bytes
+BoC Size: 2665 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 17
@@ -129,7 +129,6 @@ Total get methods: 0
 * 50845: Room is not closed
 * 58501: Entry fee mismatch
 * 62631: Winners count mismatch
-* 63002: Excessive payment amount
 
 ## Trait inheritance diagram
 

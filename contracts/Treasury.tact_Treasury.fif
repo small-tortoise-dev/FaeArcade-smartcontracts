@@ -531,39 +531,61 @@ PROGRAM{
       s6 PUSH
       1 EQINT
       THROWANYIFNOT
-      s7 PUSH
-      58501 PUSHINT
-      s0 s10 XCHG
-      EQUAL
-      s1 s9 XCHG
-      THROWANYIFNOT
+      s7 s3 PUSH2
+      IF:<{
+        s8 PUSH
+        58501 PUSHINT
+        s0 s11 XCHG
+        EQUAL
+        s1 s10 XCHG
+        THROWANYIFNOT
+      }>ELSE<{
+        DROP
+        s7 POP
+        s7 PUSH
+        s0 s7 XCHG
+      }>
       __tact_context_get INLINECALLDICT
       $Context$_get_value INLINECALLDICT
-      s7 s7 PUSH2
-      100000000 PUSHINT
-      ADD
-      s2 PUSH
+      s9 s0 PUSH2
       20096 PUSHINT
-      s0 s3 XCHG
-      GEQ
-      s1 s2 XCHG
-      THROWANYIFNOT
-      SWAP
-      63002 PUSHINT
       s0 s2 XCHG
-      LEQ
+      GEQ
       THROWANYIFNOT
-      s6 s10 PUSH2
+      s9 s12 PUSH2
       MUL
-      s10 PUSH
+      s12 PUSH
       DIV
+      s10 s0 PUSH2
+      SUB
+      s1 s7 XCHG
+      ADD
+      s0 s5 XCHG
+      INC
+      s6 s9 XCHG
+      s5 s8 XCHG
+      s4 s7 XCHG
+      s3 s8 XCHG
+      s7 s2 XCHG2
+      257 PUSHINT
+      s9 s9 XCHG2
+      NEWC
+      $RoomData$_store_cell INLINECALLDICT
+      s3 s11 XCHG
+      s1 s5 XCHG
+      __tact_dict_set_int_cell INLINECALLDICT
+      -ROT
+      SUB
       DUP
       0 GTINT
       IF:<{
+      }>
+      s7 PUSH
+      0 GTINT
+      IF:<{
             B{b5ee9c7241010101000f00001a00000000486f7573652046656509a96100} B>boc PUSHREF
+        s12 s8 s8 PUXC2
         FALSE
-        21 s() PUSH
-        s3 s2 s(-1) PUXC2
         $SendParameters$_constructor_to_value_body_bounce INLINECALLDICT
             NEWC
             b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
@@ -631,22 +653,86 @@ PROGRAM{
             // Group 5: Sending the message, with `mode` on top
             SWAP
             SENDRAWMSG // https://github.com/tact-lang/tact/issues/1558
+      }>ELSE<{
+        s7 POP
       }>
-      s7 s(-1) PUXC
-      SUB
-      s1 s4 XCHG
-      ADD
-      s0 s2 XCHG
-      INC
-      s0 s2 XCHG
-      257 PUSHINT
-      s4 s8 XCHG2
-      NEWC
-      $RoomData$_store_cell INLINECALLDICT
-      s3 s8 XCHG
-      s1 s2 XCHG
-      __tact_dict_set_int_cell INLINECALLDICT
-      s0 s5 XCHG
+      s6 PUSH
+      0 GTINT
+      IF:<{
+        __tact_context_get_sender INLINECALLDICT
+            B{b5ee9c7241010101001d0000360000000045786365737320456e7472792046656520526566756e6430798e25} B>boc PUSHREF
+        s1 s8 s0 XCHG3
+        FALSE
+        $SendParameters$_constructor_to_value_body_bounce INLINECALLDICT
+            NEWC
+            b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
+            1 STI               // store `bounce`
+            b{000} STSLICECONST // store bounced = false and src = addr_none
+            STSLICE             // store `to`
+            SWAP
+            STGRAMS             // store `value`
+            105 PUSHINT         // 1 + 4 + 4 + 64 + 32
+            STZEROES            // store currency_collection, ihr_fee, fwd_fee, created_lt and created_at
+            // → Stack state
+            // s0: Builder
+            // s1: `data`
+            // s2: `code`
+            // s3: `body`
+            // s4: `mode`
+            // Group 2: Placing the Builder after code and data, then checking those for nullability
+            s2 XCHG0
+            DUP2
+            ISNULL
+            SWAP
+            ISNULL
+            AND
+            // → Stack state
+            // s0: -1 (true) if `data` and `code` are both null, 0 (false) otherwise
+            // s1: `code`
+            // s2: `data`
+            // s3: Builder
+            // s4: `body`
+            // s5: `mode`
+            // Group 3: Left branch of the IFELSE, executed if s0 is -1 (true)
+            <{
+                DROP2 // drop `data` and `code`, since either of those is null
+                b{0} STSLICECONST
+            }> PUSHCONT
+            // Group 3: Right branch of the IFELSE, executed if s0 is 0 (false)
+            <{
+                // _ split_depth:(Maybe (## 5))
+                //   special:(Maybe TickTock)
+                //   code:(Maybe ^Cell)
+                //   data:(Maybe ^Cell)
+                //   library:(Maybe ^Cell)
+                // = StateInit;
+                ROT                // place message Builder on top
+                b{10} STSLICECONST // store Maybe = true, Either = false
+                // Start composing inlined StateInit
+                b{00} STSLICECONST // store split_depth and special first
+                STDICT             // store code
+                STDICT             // store data
+                b{0} STSLICECONST  // store library
+            }> PUSHCONT
+            // Group 3: IFELSE that does the branching shown above
+            IFELSE
+            // → Stack state
+            // s0: Builder
+            // s1: null or StateInit
+            // s2: `body`
+            // s3: `mode`
+            // Group 4: Finalizing the message
+            STDICT // store `body` as ref with an extra Maybe bit, since `body` might be null
+            ENDC
+            // → Stack state
+            // s0: Cell
+            // s1: `mode`
+            // Group 5: Sending the message, with `mode` on top
+            SWAP
+            SENDRAWMSG // https://github.com/tact-lang/tact/issues/1558
+      }>ELSE<{
+        s6 POP
+      }>
       $Treasury$_contract_store INLINECALLDICT
     }>
     DUP

@@ -134,20 +134,39 @@ contract Treasury with Deployable {
         
         let room_data: RoomData = room!!;
         require(room_data.status == 1, "Room is not open");
-        require(room_data.entry_fee == expected_entry_fee, "Entry fee mismatch");
         
-        // Validate entry fee - contract should receive exactly the entry fee
+        // Get the actual entry fee to use (room's entry fee or expected if room was just created)
+        let actual_entry_fee: Int = room_data.entry_fee;
+        
+        // If room was just created, use expected_entry_fee
+        // Otherwise, require they match (for existing rooms)
+        if (room_data.total_entries == 0) {
+            // Room was just created, use expected_entry_fee
+            actual_entry_fee = expected_entry_fee;
+            room_data.entry_fee = expected_entry_fee;
+        } else {
+            // Room exists and has entries, entry fees must match exactly
+            require(room_data.entry_fee == expected_entry_fee, "Entry fee mismatch");
+        }
+        
+        // Validate entry fee - contract should receive exactly the entry fee (no overpayment allowed)
         let received_amount: Int = context().value;
-        let min_required: Int = room_data.entry_fee;
-        let max_required: Int = room_data.entry_fee + ton("0.1"); // Allow small gas buffer
+        require(received_amount == actual_entry_fee, "Entry fee must be exact amount");
         
-        require(received_amount >= min_required, "Insufficient entry fee");
-        require(received_amount <= max_required, "Excessive payment amount");
+        // Calculate house fee (2.5%) based on actual entry fee
+        let house_fee: Int = (actual_entry_fee * self.HOUSE_FEE_BPS) / self.HOUSE_FEE_DENOMINATOR;
         
-        // Calculate house fee (2.5%)
-        let house_fee: Int = (room_data.entry_fee * self.HOUSE_FEE_BPS) / self.HOUSE_FEE_DENOMINATOR;
+        // Calculate pool contribution (97.5%) based on actual entry fee  
+        let pool_contribution: Int = actual_entry_fee - house_fee;
         
-        // Send house fee to owner wallet immediately
+        // Update room data (pool is tracked in state)
+        room_data.pool = room_data.pool + pool_contribution;
+        room_data.total_entries = room_data.total_entries + 1;
+        
+        // Save the updated room data
+        self.rooms.set(room_key, room_data);
+        
+        // Send house fee to owner wallet
         if (house_fee > 0) {
             send(SendParameters{
                 to: self.owner,
@@ -157,17 +176,8 @@ contract Treasury with Deployable {
             });
         }
         
-        // Add 97.5% to room pool
-        let pool_contribution: Int = room_data.entry_fee - house_fee;
-        
-        // Update room data
-        room_data.pool = room_data.pool + pool_contribution;
-        room_data.total_entries = room_data.total_entries + 1;
-        
-        self.rooms.set(room_key, room_data);
-        
-        // No refunds needed - gas is handled by the network
-        // The contract receives exactly the entry fee amount
+        // The pool contribution stays in the contract balance automatically
+        // No excess refund logic needed since we require exact payment
     }
     
     // Close a room (text message with parameters)

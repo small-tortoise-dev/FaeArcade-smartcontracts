@@ -95,8 +95,9 @@ export async function run(provider: NetworkProvider) {
       console.log('\n🆕 INITIAL DEPLOYMENT MODE')
       
       // Initial deployment - configure owner and upgrade authority
-      const ownerAddress = deployer // Use deployer as owner for new contract
-      const upgradeAuthorityAddress = deployer
+      // Use deployer as owner, but create a different upgrade authority to get a new contract address
+      const ownerAddress = deployer
+      const upgradeAuthorityAddress = Address.parse("0QDOoeBGMtBp576nfJoEDAb6fVzBai0FxDBMTl6cv2tBvtzk") // Different from deployer
       
       console.log('Creating initial contract instance...')
       const treasury = await Treasury.fromInit(ownerAddress, upgradeAuthorityAddress)
