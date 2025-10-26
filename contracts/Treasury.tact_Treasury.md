@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: Treasury
-BoC Size: 2665 bytes
+BoC Size: 2442 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 17
@@ -120,13 +120,14 @@ Total get methods: 0
 * 14103: Room not found
 * 14506: Too many winners
 * 16751: Room already paid
-* 20096: Insufficient entry fee
+* 20618: Room does not exist
 * 27407: Room already exists
 * 39893: Winners count must be positive
 * 40266: Room key must be positive
 * 43137: No remaining reward to claim
 * 49080: No airdrop pool available
 * 50845: Room is not closed
+* 51351: Entry fee must be exact amount
 * 58501: Entry fee mismatch
 * 62631: Winners count mismatch
 

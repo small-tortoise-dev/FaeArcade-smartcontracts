@@ -47,7 +47,7 @@ export async function run(provider: NetworkProvider) {
     console.log('Upgrade Authority:', upgradeAuthorityAddress.toString())
     
     console.log('\n📝 Add to your .env file:')
-    console.log(`TREASURY_ADDRESS=${treasury.address.toString()}`)
+    console.log(`TREASURY_CONTRACT_ADDRESS=${treasury.address.toString()}`)
     
     console.log('\n🔗 View on explorer:')
     console.log(`https://testnet.tonscan.org/address/${treasury.address.toString()}`)
@@ -65,11 +65,11 @@ export async function run(provider: NetworkProvider) {
     }
     
     // Remove existing treasury address
-    envContent = envContent.replace(/TREASURY_ADDRESS=.*\n/g, '')
+    envContent = envContent.replace(/TREASURY_CONTRACT_ADDRESS=.*\n/g, '')
     
     // Add new treasury address
     envContent += `\n# Treasury Contract Address\n`
-    envContent += `TREASURY_ADDRESS=${treasury.address.toString()}\n`
+    envContent += `TREASURY_CONTRACT_ADDRESS=${treasury.address.toString()}\n`
     
     fs.writeFileSync(envPath, envContent)
     console.log('✅ .env file updated with contract address')

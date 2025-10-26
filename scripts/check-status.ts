@@ -14,14 +14,14 @@ async function checkContractStatus() {
     // Get environment variables
     const apiKey = process.env.TONCENTER_API_KEY
     const network = process.env.NETWORK || 'testnet'
-    const contractAddress = process.env.TREASURY_ADDRESS
+    const contractAddress = process.env.TREASURY_CONTRACT_ADDRESS
     
     if (!apiKey) {
       throw new Error('TONCENTER_API_KEY not found in environment')
     }
     
     if (!contractAddress) {
-      throw new Error('TREASURY_ADDRESS not found in environment')
+      throw new Error('TREASURY_CONTRACT_ADDRESS not found in environment')
     }
     
     console.log('✅ Environment loaded')

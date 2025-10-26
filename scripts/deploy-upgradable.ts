@@ -2,7 +2,7 @@ import { toNano, Address, beginCell } from '@ton/core'
 import { NetworkProvider } from '@ton/blueprint'
 import { Treasury } from '../wrappers/Treasury'
 
-export async function run(provider: NetworkProvider) {
+export async function run(provider: NetworkProvider, args: string[]) {
   console.log('🚀 Deploying Upgradable FAE Arcade Treasury Contract...')
   console.log('=' .repeat(60))
   
@@ -18,9 +18,10 @@ export async function run(provider: NetworkProvider) {
     console.log('Address:', deployer.toString())
     console.log('Network: testnet')
     
-    // Check if this is an upgrade or initial deployment
-    const isUpgrade = process.argv.includes('--upgrade')
-    const existingContractAddress = process.env.TREASURY_ADDRESS
+    // Check deployment mode
+    const isUpgrade = args.includes('upgrade') || process.argv.includes('--upgrade')
+    const forceRedeploy = args.includes('force') || process.argv.includes('--force')
+    const existingContractAddress = process.env.TREASURY_CONTRACT_ADDRESS
     
     if (isUpgrade && existingContractAddress) {
       console.log('\n🔄 UPGRADE MODE')
@@ -58,7 +59,7 @@ export async function run(provider: NetworkProvider) {
       console.log('New Upgrade Authority:', newUpgradeAuthority.toString())
       
       console.log('\n📝 Update your .env file:')
-      console.log(`TREASURY_ADDRESS=${treasury.address.toString()}`)
+      console.log(`TREASURY_CONTRACT_ADDRESS=${treasury.address.toString()}`)
       
       console.log('\n🔗 View new contract on explorer:')
       console.log(`https://testnet.tonscan.org/address/${treasury.address.toString()}`)
@@ -82,11 +83,11 @@ export async function run(provider: NetworkProvider) {
       }
       
       // Remove existing treasury address
-      envContent = envContent.replace(/TREASURY_ADDRESS=.*\n/g, '')
+      envContent = envContent.replace(/TREASURY_CONTRACT_ADDRESS=.*\n/g, '')
       
       // Add new treasury address
       envContent += `\n# Treasury Contract Address (Upgraded)\n`
-      envContent += `TREASURY_ADDRESS=${treasury.address.toString()}\n`
+      envContent += `TREASURY_CONTRACT_ADDRESS=${treasury.address.toString()}\n`
       
       fs.writeFileSync(envPath, envContent)
       console.log('✅ .env file updated with new contract address')
@@ -107,6 +108,25 @@ export async function run(provider: NetworkProvider) {
       console.log('Upgrade Authority:', upgradeAuthorityAddress.toString())
       console.log('Contract Address:', treasury.address.toString())
       
+      // Check if contract already exists
+      const isDeployed = await provider.isContractDeployed(treasury.address)
+      
+      if (isDeployed && !forceRedeploy) {
+        console.log('\n⚠️  Contract already exists at this address!')
+        console.log('Contract Address:', treasury.address.toString())
+        console.log('\nOptions:')
+        console.log('1. Use force to redeploy: npx blueprint run deploy-upgradable --testnet force')
+        console.log('2. Use upgrade for upgrade deployment: npx blueprint run deploy-upgradable --testnet upgrade')
+        console.log('3. Use the existing contract address in your .env file')
+        console.log('\n📝 Current contract address for .env:')
+        console.log(`TREASURY_CONTRACT_ADDRESS=${treasury.address.toString()}`)
+        return
+      }
+      
+      if (forceRedeploy && isDeployed) {
+        console.log('\n🔄 FORCE REDEPLOY MODE - Deploying to existing address')
+      }
+      
       console.log('\n🚀 Deploying initial contract...')
       
       // Deploy with 1.1 TON
@@ -124,7 +144,7 @@ export async function run(provider: NetworkProvider) {
       console.log('Upgrade Authority:', upgradeAuthorityAddress.toString())
       
       console.log('\n📝 Add to your .env file:')
-      console.log(`TREASURY_ADDRESS=${treasury.address.toString()}`)
+      console.log(`TREASURY_CONTRACT_ADDRESS=${treasury.address.toString()}`)
       
       console.log('\n🔗 View on explorer:')
       console.log(`https://testnet.tonscan.org/address/${treasury.address.toString()}`)
@@ -145,11 +165,11 @@ export async function run(provider: NetworkProvider) {
       }
       
       // Remove existing treasury address
-      envContent = envContent.replace(/TREASURY_ADDRESS=.*\n/g, '')
+      envContent = envContent.replace(/TREASURY_CONTRACT_ADDRESS=.*\n/g, '')
       
       // Add new treasury address
       envContent += `\n# Treasury Contract Address\n`
-      envContent += `TREASURY_ADDRESS=${treasury.address.toString()}\n`
+      envContent += `TREASURY_CONTRACT_ADDRESS=${treasury.address.toString()}\n`
       
       fs.writeFileSync(envPath, envContent)
       console.log('✅ .env file updated with contract address')
@@ -161,6 +181,7 @@ export async function run(provider: NetworkProvider) {
     console.log('  1. Check your .env file has TONCENTER_API_KEY and MNEMONIC')
     console.log('  2. Make sure you have testnet TON in your wallet (at least 1.1 TON)')
     console.log('  3. Get testnet TON from @testgiver_ton_bot on Telegram')
-    console.log('  4. For upgrades, ensure TREASURY_ADDRESS is set in .env')
+    console.log('  4. For upgrades, ensure TREASURY_CONTRACT_ADDRESS is set in .env')
+    console.log('  5. If contract already exists, use "force" to redeploy or "upgrade" for upgrades')
   }
 }

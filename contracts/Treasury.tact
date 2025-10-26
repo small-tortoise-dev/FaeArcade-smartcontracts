@@ -58,8 +58,10 @@ contract Treasury with Deployable {
     
     // Helper function to parse text message parameters
     fun parseTextMessage(slice: Slice, textLength: Int): Slice {
-        slice.skipBits(32); // Skip opcode
-        slice.skipBits(textLength * 8); // Skip text content
+        slice.skipBits(32); // Skip opcode (4 bytes)
+        // storeStringTail stores the string with null termination and padding
+        // For "open_room_params" (16 chars), it stores 16 bytes + null terminator + padding
+        slice.skipBits((textLength + 1) * 8); // Skip string + null terminator
         return slice;
     }
     
@@ -115,39 +117,16 @@ contract Treasury with Deployable {
         // Get room data
         let room: RoomData? = self.rooms.get(room_key);
         
-        // If room doesn't exist, create it automatically
-        if (room == null) {
-            // Create new room with the expected parameters
-            let new_room: RoomData = RoomData{
-                entry_fee: expected_entry_fee,
-                winners_count: 100, // Default winners count
-                status: 1, // Open
-                pool: 0,
-                total_entries: 0,
-                paid_hash: 0,
-                created_at: now(),
-                closed_at: 0
-            };
-            self.rooms.set(room_key, new_room);
-            room = new_room;
-        }
+        // Room must exist before entry - no auto-creation in entry handler
+        require(room != null, "Room does not exist");
         
+        // Room exists - process entry payment
         let room_data: RoomData = room!!;
         require(room_data.status == 1, "Room is not open");
         
-        // Get the actual entry fee to use (room's entry fee or expected if room was just created)
+        // For existing rooms, entry fees must match exactly
+        require(room_data.entry_fee == expected_entry_fee, "Entry fee mismatch");
         let actual_entry_fee: Int = room_data.entry_fee;
-        
-        // If room was just created, use expected_entry_fee
-        // Otherwise, require they match (for existing rooms)
-        if (room_data.total_entries == 0) {
-            // Room was just created, use expected_entry_fee
-            actual_entry_fee = expected_entry_fee;
-            room_data.entry_fee = expected_entry_fee;
-        } else {
-            // Room exists and has entries, entry fees must match exactly
-            require(room_data.entry_fee == expected_entry_fee, "Entry fee mismatch");
-        }
         
         // Validate entry fee - contract should receive exactly the entry fee (no overpayment allowed)
         let received_amount: Int = context().value;

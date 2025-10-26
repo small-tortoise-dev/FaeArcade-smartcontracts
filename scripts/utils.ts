@@ -6,7 +6,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 // Environment variables
-export const TREASURY_ADDRESS = process.env.TREASURY_ADDRESS!
+export const TREASURY_CONTRACT_ADDRESS = process.env.TREASURY_CONTRACT_ADDRESS!
 export const NETWORK = process.env.NETWORK || 'testnet'
 export const MNEMONIC = process.env.MNEMONIC!
 
