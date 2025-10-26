@@ -24,27 +24,34 @@ export async function run(provider: NetworkProvider, args: string[]) {
       console.log('\n🔄 UPGRADE MODE')
       console.log('Existing contract:', existingContractAddress)
       
-      const existingOwner = Address.parse(existingContractAddress)
+      const existingOwner = Address.parse("0QDOoeBGMtBp576nfJoEDAb6fVzBai0FxDBMTl6cv2tBvtzk")
       const newUpgradeAuthority = deployer
       
+      console.log('Creating new contract instance for upgrade...')
       const treasury = await Treasury.fromInit(existingOwner, newUpgradeAuthority)
       
-      console.log('Creating new contract instance for upgrade...')
+      console.log('\n📋 Upgrade Configuration:')
+      console.log('Owner (unchanged):', existingOwner.toString())
+      console.log('New Upgrade Authority:', newUpgradeAuthority.toString())
+      console.log('New Contract Address:', treasury.address.toString())
+      
+      console.log('\n🚀 Deploying upgraded contract...')
       await provider.deploy(treasury, toNano('1.1'))
+      console.log('✅ Upgrade deployment transaction sent!')
       await provider.waitForDeploy(treasury.address)
       
-      console.log('🎉 Upgrade Deployed Successfully!')
+      console.log('\n🎉 Treasury Contract Upgrade Deployed Successfully!')
       console.log('New Contract Address:', treasury.address.toString())
+      console.log('\n📝 Update your .env file:')
+      console.log(`TREASURY_CONTRACT_ADDRESS=${treasury.address.toString()}`)
       return
     }
     
-    // INITIAL DEPLOYMENT OR EXISTING CHECK
+    // INITIAL DEPLOYMENT
     console.log('\n🆕 INITIAL DEPLOYMENT MODE')
     
-    // Use DIFFERENT addresses to get a NEW contract address
-    // To create a truly NEW contract, use deployer as owner and upgrade authority
     const ownerAddress = deployer
-    const upgradeAuthorityAddress = deployer // Same as owner to get NEW address
+    const upgradeAuthorityAddress = deployer // Use deployer for both to get unique address
     
     const treasury = await Treasury.fromInit(ownerAddress, upgradeAuthorityAddress)
     
@@ -58,13 +65,15 @@ export async function run(provider: NetworkProvider, args: string[]) {
     if (isDeployed) {
       console.log('\n✅ Contract already exists at this address!')
       console.log('Contract Address:', treasury.address.toString())
-      console.log('\n💡 To create a NEW contract, change owner/upgrade authority in the code.')
+      console.log('\n🔗 View contract on explorer:')
+      console.log(`https://testnet.tonscan.org/address/${treasury.address.toString()}`)
       return
     }
     
     // Deploy new contract
     console.log('\n🚀 Deploying contract...')
     await provider.deploy(treasury, toNano('1.1'))
+    
     console.log('✅ Deployment transaction sent!')
     console.log('⏳ Waiting for confirmation...')
     
@@ -76,8 +85,11 @@ export async function run(provider: NetworkProvider, args: string[]) {
     console.log('Upgrade Authority:', upgradeAuthorityAddress.toString())
     console.log('\n📝 Add to your .env file:')
     console.log(`TREASURY_CONTRACT_ADDRESS=${treasury.address.toString()}`)
+    console.log('\n🔗 View on explorer:')
+    console.log(`https://testnet.tonscan.org/address/${treasury.address.toString()}`)
     
   } catch (error: any) {
     console.error('❌ Deployment failed:', error.message)
   }
 }
+

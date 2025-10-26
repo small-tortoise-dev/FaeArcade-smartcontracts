@@ -56,22 +56,23 @@ contract Treasury with Deployable {
         self.current_room_id = 0;
     }
     
-    // Helper function to parse text message parameters
-    fun parseTextMessage(slice: Slice, textLength: Int): Slice {
-        slice.skipBits(32); // Skip opcode (4 bytes)
-        // storeStringTail stores the string with null termination and padding
-        // For "open_room_params" (16 chars), it stores 16 bytes + null terminator + padding
-        slice.skipBits((textLength + 1) * 8); // Skip string + null terminator
-        return slice;
-    }
+    // Note: parseTextMessage helper removed due to Tact slice mutability issues
     
     // External message handlers
     
     
     // Open room with specific parameters (text message with parameters)
     receive("open_room_params") {
-        // Parse message body for parameters using context().raw
-        let slice = self.parseTextMessage(context().raw, 16); // "open_room_params" is 16 characters
+        // The message body contains: opcode + "open_room_params" + parameters
+        // Tact automatically handles the string part, we just need to parse parameters
+        let slice = context().raw;
+        
+        // Skip opcode (32 bits)
+        slice.skipBits(32);
+        
+        // Skip the string "open_room_params" stored by storeStringTail
+        // storeStringTail stores the string as a reference, so we skip the reference
+        slice.skipRef();
         
         // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
@@ -108,7 +109,9 @@ contract Treasury with Deployable {
     // User enters a paid room with specific parameters (text message with parameters)
     receive("enter_room_params") {
         // Parse message body for parameters using context().raw
-        let slice = self.parseTextMessage(context().raw, 17); // "enter_room_params" is 17 characters
+        let slice = context().raw;
+        slice.skipBits(32); // Skip opcode
+        slice.skipRef(); // Skip "enter_room_params" string reference
         
         // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
@@ -162,7 +165,9 @@ contract Treasury with Deployable {
     // Close a room (text message with parameters)
     receive("close_room_params") {
         // Parse message body for room key using context().raw
-        let slice = self.parseTextMessage(context().raw, 17); // "close_room_params" is 17 characters
+        let slice = context().raw;
+        slice.skipBits(32); // Skip opcode
+        slice.skipRef(); // Skip "close_room_params" string reference
         
         // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
@@ -185,7 +190,9 @@ contract Treasury with Deployable {
     // Distribute payouts with linear weights (pull-based) - text message with parameters
     receive("distribute_payouts_params") {
         // Parse message body for parameters using context().raw
-        let slice = self.parseTextMessage(context().raw, 24); // "distribute_payouts_params" is 24 characters
+        let slice = context().raw;
+        slice.skipBits(32); // Skip opcode
+        slice.skipRef(); // Skip "distribute_payouts_params" string reference
         
         // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
@@ -228,7 +235,9 @@ contract Treasury with Deployable {
     // Claim reward (pull-based) - text message with parameters
     receive("claim_reward_params") {
         // Parse message body for parameters using context().raw
-        let slice = self.parseTextMessage(context().raw, 19); // "claim_reward_params" is 19 characters
+        let slice = context().raw;
+        slice.skipBits(32); // Skip opcode
+        slice.skipRef(); // Skip "claim_reward_params" string reference
         
         // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);

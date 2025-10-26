@@ -77,9 +77,6 @@ _ $Context$_get_raw((int, slice, int, slice) v) inline;
 ;; $Treasury$_contract_store
 () $Treasury$_contract_store((slice, slice, int, int, cell, int, cell, cell, int, int) v) impure inline;
 
-;; $Treasury$_fun_parseTextMessage
-((slice, slice, int, int, cell, int, cell, cell, int, int), slice) $Treasury$_fun_parseTextMessage((slice, slice, int, int, cell, int, cell, cell, int, int) $self, slice $slice, int $textLength) impure inline_ref;
-
 ;; $MessageParameters$_constructor_bounce_to_value_mode_body
 ((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline;
 
@@ -271,6 +268,10 @@ int $global_myBalance() impure asm """
 
 int $global_now() impure asm """
     NOW
+""";
+
+(slice, ()) $Slice$_fun_skipRef(slice $self) impure asm """
+    LDREF NIP
 """;
 
 (slice, int) $Slice$_fun_loadCoins(slice $self) impure asm( -> 1 0) """
@@ -516,14 +517,6 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
     return ($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR);
 }
 
-((slice, slice, int, int, cell, int, cell, cell, int, int), slice) $Treasury$_fun_parseTextMessage((slice, slice, int, int, cell, int, cell, cell, int, int) $self, slice $slice, int $textLength) impure inline_ref {
-    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
-    $slice~$Slice$_fun_skipBits(32);
-    $slice~$Slice$_fun_skipBits((($textLength + 1) * 8));
-    var $fresh$ret_0 = $slice;
-    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_0);
-}
-
 ;;
 ;; Get methods of a Contract Treasury
 ;;
@@ -569,7 +562,9 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
     var text_op = slice_hash(in_msg);
     ;; Receive "open_room_params" message
     if (text_op == 0xf7f7c1c7a35dbbe41cbb35aa7d13ae03739219b763f8529bf693dc57abfdbec3) {
-        slice $slice = ($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)~$Treasury$_fun_parseTextMessage($Context$_get_raw(__tact_context_get()), 16);
+        slice $slice = $Context$_get_raw(__tact_context_get());
+        $slice~$Slice$_fun_skipBits(32);
+        $slice~$Slice$_fun_skipRef();
         int $room_key = $slice~load_uint(32);
         int $entry_fee = $slice~$Slice$_fun_loadCoins();
         int $winners_count = $slice~load_uint(8);
@@ -587,7 +582,9 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
     }
     ;; Receive "enter_room_params" message
     if (text_op == 0x23918e6c7fc5497b05e31986ff583a99314910879bd1ccfe3a465e83c3aa8628) {
-        slice $slice = ($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)~$Treasury$_fun_parseTextMessage($Context$_get_raw(__tact_context_get()), 17);
+        slice $slice = $Context$_get_raw(__tact_context_get());
+        $slice~$Slice$_fun_skipBits(32);
+        $slice~$Slice$_fun_skipRef();
         int $room_key = $slice~load_uint(32);
         int $expected_entry_fee = $slice~$Slice$_fun_loadCoins();
         tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
@@ -611,7 +608,9 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
     }
     ;; Receive "close_room_params" message
     if (text_op == 0x78f481cc938c19046a2dbeed444b8cf7b65aa38154efdaef2a7d5dd15d2dab6c) {
-        slice $slice = ($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)~$Treasury$_fun_parseTextMessage($Context$_get_raw(__tact_context_get()), 17);
+        slice $slice = $Context$_get_raw(__tact_context_get());
+        $slice~$Slice$_fun_skipBits(32);
+        $slice~$Slice$_fun_skipRef();
         int $room_key = $slice~load_uint(32);
         tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
         throw_unless(14103, (~ null?($room)));
@@ -625,7 +624,9 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
     }
     ;; Receive "distribute_payouts_params" message
     if (text_op == 0x3eefb0952b6918ad8b478603bade6f3639a4230c05b7f2e2282ffa77fede55e5) {
-        slice $slice = ($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)~$Treasury$_fun_parseTextMessage($Context$_get_raw(__tact_context_get()), 24);
+        slice $slice = $Context$_get_raw(__tact_context_get());
+        $slice~$Slice$_fun_skipBits(32);
+        $slice~$Slice$_fun_skipRef();
         int $room_key = $slice~load_uint(32);
         int $winners_count = $slice~load_uint(8);
         tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
@@ -652,7 +653,9 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
     }
     ;; Receive "claim_reward_params" message
     if (text_op == 0x98e91200d96b01eb7c70c724a4d16a71e36dd0752ec2220accce37d2ea4be77c) {
-        slice $slice = ($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)~$Treasury$_fun_parseTextMessage($Context$_get_raw(__tact_context_get()), 19);
+        slice $slice = $Context$_get_raw(__tact_context_get());
+        $slice~$Slice$_fun_skipBits(32);
+        $slice~$Slice$_fun_skipRef();
         int $room_key = $slice~load_uint(32);
         slice $winner_address = $slice~$Slice$_fun_loadAddress();
         tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
