@@ -63,15 +63,16 @@ contract Treasury with Deployable {
     
     // Open room with specific parameters (text message with parameters)
     receive("open_room_params") {
-        // The message body contains: opcode + "open_room_params" + parameters
-        // Tact automatically handles the string part, we just need to parse parameters
+        // Parse message body for parameters
+        // The body format is: opcode (32 bits) + reference to string + parameters
+        // Tact automatically handles the receive("string") matching
         let slice = context().raw;
         
         // Skip opcode (32 bits)
         slice.skipBits(32);
         
-        // Skip the string "open_room_params" stored by storeStringTail
-        // storeStringTail stores the string as a reference, so we skip the reference
+        // Skip the string reference (Tact has already matched "open_room_params")
+        // The backend uses storeStringRefTail which stores the string in a reference
         slice.skipRef();
         
         // Now parse the actual parameters
@@ -111,7 +112,9 @@ contract Treasury with Deployable {
         // Parse message body for parameters using context().raw
         let slice = context().raw;
         slice.skipBits(32); // Skip opcode
-        slice.skipRef(); // Skip "enter_room_params" string reference
+        
+        // Skip the string reference
+        slice.skipRef();
         
         // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
@@ -167,7 +170,9 @@ contract Treasury with Deployable {
         // Parse message body for room key using context().raw
         let slice = context().raw;
         slice.skipBits(32); // Skip opcode
-        slice.skipRef(); // Skip "close_room_params" string reference
+        
+        // Skip the string reference
+        slice.skipRef();
         
         // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
@@ -192,7 +197,9 @@ contract Treasury with Deployable {
         // Parse message body for parameters using context().raw
         let slice = context().raw;
         slice.skipBits(32); // Skip opcode
-        slice.skipRef(); // Skip "distribute_payouts_params" string reference
+        
+        // Skip the string reference
+        slice.skipRef();
         
         // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
@@ -237,7 +244,9 @@ contract Treasury with Deployable {
         // Parse message body for parameters using context().raw
         let slice = context().raw;
         slice.skipBits(32); // Skip opcode
-        slice.skipRef(); // Skip "claim_reward_params" string reference
+        
+        // Skip the string reference
+        slice.skipRef();
         
         // Now parse the actual parameters
         let room_key: Int = slice.loadUint(32);
@@ -323,7 +332,7 @@ contract Treasury with Deployable {
     }
     
     
-    // Getter functions for contract state
+    // Getter functions exposed as methods
     fun getOwner(): Address {
         return self.owner;
     }

@@ -55,7 +55,7 @@ export class Treasury implements Contract {
   ) {
     const body = beginCell()
       .storeUint(0, 32) // op code for text message
-      .storeStringTail("open_room_params") // text message (matches contract handler)
+      .storeStringRefTail("open_room_params") // ✅ FIXED: Store string in reference to match contract parsing
       .storeUint(roomKey, 32) // room key
       .storeCoins(entryFee) // entry fee
       .storeUint(winnersCount, 8) // winners count
@@ -76,7 +76,7 @@ export class Treasury implements Contract {
   ) {
     const body = beginCell()
       .storeUint(0, 32) // op code for text message
-      .storeStringTail("enter_room_params") // text message (matches contract handler)
+      .storeStringRefTail("enter_room_params") // ✅ FIXED: Store string in reference to match contract parsing
       .storeUint(roomKey, 32) // room key
       .storeCoins(entryFee) // entry fee
       .endCell()
@@ -95,7 +95,7 @@ export class Treasury implements Contract {
   ) {
     const body = beginCell()
       .storeUint(0, 32) // op code for text message
-      .storeStringTail("close_room_params") // text message (matches contract handler)
+      .storeStringRefTail("close_room_params") // ✅ FIXED: Store string in reference to match contract parsing
       .storeUint(roomKey, 32) // room key
       .endCell()
 
@@ -114,7 +114,7 @@ export class Treasury implements Contract {
   ) {
     const body = beginCell()
       .storeUint(0, 32) // op code for text message
-      .storeStringTail("distribute_payouts_params") // text message (matches contract handler)
+      .storeStringRefTail("distribute_payouts_params") // ✅ FIXED: Store string in reference to match contract parsing
       .storeUint(roomKey, 32) // room key
       .storeUint(winners.length, 8); // winners count
 
@@ -139,7 +139,7 @@ export class Treasury implements Contract {
   ) {
     const body = beginCell()
       .storeUint(0, 32) // op code for text message
-      .storeStringTail("claim_reward_params") // text message (matches contract handler)
+      .storeStringRefTail("claim_reward_params") // ✅ FIXED: Store string in reference to match contract parsing
       .storeUint(roomKey, 32) // room key
       .storeAddress(winnerAddress) // winner address
       .endCell()

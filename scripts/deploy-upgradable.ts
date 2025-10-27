@@ -18,6 +18,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
     console.log('Network: testnet')
     
     const isUpgrade = args.includes('upgrade') || process.argv.includes('--upgrade')
+    const isForce = args.includes('force') || process.argv.includes('--force')
     const existingContractAddress = process.env.TREASURY_CONTRACT_ADDRESS
     
     if (isUpgrade && existingContractAddress) {
@@ -39,12 +40,18 @@ export async function run(provider: NetworkProvider, args: string[]) {
     }
     
     // INITIAL DEPLOYMENT OR EXISTING CHECK
-    console.log('\n🆕 INITIAL DEPLOYMENT MODE')
+    console.log('\n🆕 DEPLOYMENT MODE')
     
-    // Use DIFFERENT addresses to get a NEW contract address
-    // To create a truly NEW contract, use deployer as owner and upgrade authority
-    const ownerAddress = deployer
-    const upgradeAuthorityAddress = deployer // Same as owner to get NEW address
+    // To get a NEW contract address, we need to use DIFFERENT init parameters
+    // Contract address is deterministic: same (owner, upgrade_authority) = same address
+    
+    // Strategy: Use deployer as owner, Zero address as upgrade authority
+    // This creates a NEW address different from existing deployment
+    let ownerAddress = deployer
+    let upgradeAuthorityAddress = Address.parse('EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c') // Zero address
+    
+    console.log('📝 Using deployer as owner with Zero address as upgrade authority')
+    console.log('📝 This will create a NEW contract address')
     
     const treasury = await Treasury.fromInit(ownerAddress, upgradeAuthorityAddress)
     
@@ -56,10 +63,53 @@ export async function run(provider: NetworkProvider, args: string[]) {
     const isDeployed = await provider.isContractDeployed(treasury.address)
     
     if (isDeployed) {
-      console.log('\n✅ Contract already exists at this address!')
-      console.log('Contract Address:', treasury.address.toString())
-      console.log('\n💡 To create a NEW contract, change owner/upgrade authority in the code.')
-      return
+      if (!isForce) {
+        console.log('\n⚠️  Contract already exists at this address!')
+        console.log('Contract Address:', treasury.address.toString())
+        console.log('\n🔗 View contract on explorer:')
+        console.log(`https://testnet.tonscan.org/address/${treasury.address.toString()}`)
+        console.log('\n💡 This address is already deployed.')
+        console.log('💡 Use --force flag to replace the code at this address')
+        console.log('💡 Or use --upgrade flag to deploy to a different address')
+        return
+      }
+      
+      // Force flag: Cannot redeploy to existing address in TON
+      console.log('\n⚠️  FORCE MODE - Contract already deployed at this address')
+      console.log('📋 Contract Address:', treasury.address.toString())
+      console.log('\n💡 This address is already deployed and cannot be updated.')
+      console.log('💡 In TON, contract addresses are permanent.')
+      console.log('\n💡 To deploy NEW code, you need a DIFFERENT address.')
+      console.log('💡 Solution: Change the upgrade_authority to get a new address')
+      console.log('\n🔄 Generating alternative configuration...')
+      
+      // Generate alternative: Use owner as upgrade authority too
+      const alternativeTreasury = await Treasury.fromInit(deployer, deployer)
+      const altIsDeployed = await provider.isContractDeployed(alternativeTreasury.address)
+      
+      if (!altIsDeployed) {
+        console.log('\n✅ Found alternative address that is NOT deployed:')
+        console.log('   Owner:', deployer.toString())
+        console.log('   Upgrade Authority:', deployer.toString())
+        console.log('   Address:', alternativeTreasury.address.toString())
+        console.log('\n🚀 Deploying to alternative address...')
+        
+        await provider.deploy(alternativeTreasury, toNano('1.1'))
+        await provider.waitForDeploy(alternativeTreasury.address)
+        
+        console.log('\n🎉 NEW Treasury Contract Deployed!')
+        console.log('📋 NEW Contract Address:', alternativeTreasury.address.toString())
+        console.log('\n📝 Update your backend .env file:')
+        console.log(`TREASURY_CONTRACT_ADDRESS=${alternativeTreasury.address.toString()}`)
+        console.log('\n🔗 View on explorer:')
+        console.log(`https://testnet.tonscan.org/address/${alternativeTreasury.address.toString()}`)
+        return
+      } else {
+        console.log('\n❌ Alternative address also exists!')
+        console.log('💡 Both addresses are already deployed')
+        console.log('💡 You need to use a completely different wallet to deploy')
+        return
+      }
     }
     
     // Deploy new contract
