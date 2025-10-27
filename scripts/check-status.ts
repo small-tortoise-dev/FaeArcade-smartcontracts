@@ -1,4 +1,4 @@
-import { toNano, Address } from '@ton/core'
+import { Address } from '@ton/core'
 import { TonClient } from '@ton/ton'
 import { Treasury } from '../wrappers/Treasury'
 import * as dotenv from 'dotenv'
@@ -74,7 +74,7 @@ async function checkContractStatus() {
       
     } catch (error) {
       console.log('\n❌ Contract is not responding or not deployed')
-      console.log('Error:', error.message)
+      console.log('Error:', error instanceof Error ? error.message : String(error))
     }
     
     // Check account state

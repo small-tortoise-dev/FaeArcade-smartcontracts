@@ -609,153 +609,6 @@ export function dictValueParserBasechainAddress(): DictionaryValue<BasechainAddr
     }
 }
 
-export type Deploy = {
-    $$type: 'Deploy';
-    queryId: bigint;
-}
-
-export function storeDeploy(src: Deploy) {
-    return (builder: Builder) => {
-        const b_0 = builder;
-        b_0.storeUint(2490013878, 32);
-        b_0.storeUint(src.queryId, 64);
-    };
-}
-
-export function loadDeploy(slice: Slice) {
-    const sc_0 = slice;
-    if (sc_0.loadUint(32) !== 2490013878) { throw Error('Invalid prefix'); }
-    const _queryId = sc_0.loadUintBig(64);
-    return { $$type: 'Deploy' as const, queryId: _queryId };
-}
-
-export function loadTupleDeploy(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    return { $$type: 'Deploy' as const, queryId: _queryId };
-}
-
-export function loadGetterTupleDeploy(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    return { $$type: 'Deploy' as const, queryId: _queryId };
-}
-
-export function storeTupleDeploy(source: Deploy) {
-    const builder = new TupleBuilder();
-    builder.writeNumber(source.queryId);
-    return builder.build();
-}
-
-export function dictValueParserDeploy(): DictionaryValue<Deploy> {
-    return {
-        serialize: (src, builder) => {
-            builder.storeRef(beginCell().store(storeDeploy(src)).endCell());
-        },
-        parse: (src) => {
-            return loadDeploy(src.loadRef().beginParse());
-        }
-    }
-}
-
-export type DeployOk = {
-    $$type: 'DeployOk';
-    queryId: bigint;
-}
-
-export function storeDeployOk(src: DeployOk) {
-    return (builder: Builder) => {
-        const b_0 = builder;
-        b_0.storeUint(2952335191, 32);
-        b_0.storeUint(src.queryId, 64);
-    };
-}
-
-export function loadDeployOk(slice: Slice) {
-    const sc_0 = slice;
-    if (sc_0.loadUint(32) !== 2952335191) { throw Error('Invalid prefix'); }
-    const _queryId = sc_0.loadUintBig(64);
-    return { $$type: 'DeployOk' as const, queryId: _queryId };
-}
-
-export function loadTupleDeployOk(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    return { $$type: 'DeployOk' as const, queryId: _queryId };
-}
-
-export function loadGetterTupleDeployOk(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    return { $$type: 'DeployOk' as const, queryId: _queryId };
-}
-
-export function storeTupleDeployOk(source: DeployOk) {
-    const builder = new TupleBuilder();
-    builder.writeNumber(source.queryId);
-    return builder.build();
-}
-
-export function dictValueParserDeployOk(): DictionaryValue<DeployOk> {
-    return {
-        serialize: (src, builder) => {
-            builder.storeRef(beginCell().store(storeDeployOk(src)).endCell());
-        },
-        parse: (src) => {
-            return loadDeployOk(src.loadRef().beginParse());
-        }
-    }
-}
-
-export type FactoryDeploy = {
-    $$type: 'FactoryDeploy';
-    queryId: bigint;
-    cashback: Address;
-}
-
-export function storeFactoryDeploy(src: FactoryDeploy) {
-    return (builder: Builder) => {
-        const b_0 = builder;
-        b_0.storeUint(1829761339, 32);
-        b_0.storeUint(src.queryId, 64);
-        b_0.storeAddress(src.cashback);
-    };
-}
-
-export function loadFactoryDeploy(slice: Slice) {
-    const sc_0 = slice;
-    if (sc_0.loadUint(32) !== 1829761339) { throw Error('Invalid prefix'); }
-    const _queryId = sc_0.loadUintBig(64);
-    const _cashback = sc_0.loadAddress();
-    return { $$type: 'FactoryDeploy' as const, queryId: _queryId, cashback: _cashback };
-}
-
-export function loadTupleFactoryDeploy(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    const _cashback = source.readAddress();
-    return { $$type: 'FactoryDeploy' as const, queryId: _queryId, cashback: _cashback };
-}
-
-export function loadGetterTupleFactoryDeploy(source: TupleReader) {
-    const _queryId = source.readBigNumber();
-    const _cashback = source.readAddress();
-    return { $$type: 'FactoryDeploy' as const, queryId: _queryId, cashback: _cashback };
-}
-
-export function storeTupleFactoryDeploy(source: FactoryDeploy) {
-    const builder = new TupleBuilder();
-    builder.writeNumber(source.queryId);
-    builder.writeAddress(source.cashback);
-    return builder.build();
-}
-
-export function dictValueParserFactoryDeploy(): DictionaryValue<FactoryDeploy> {
-    return {
-        serialize: (src, builder) => {
-            builder.storeRef(beginCell().store(storeFactoryDeploy(src)).endCell());
-        },
-        parse: (src) => {
-            return loadFactoryDeploy(src.loadRef().beginParse());
-        }
-    }
-}
-
 export type RoomData = {
     $$type: 'RoomData';
     entry_fee: bigint;
@@ -849,45 +702,47 @@ export function dictValueParserRoomData(): DictionaryValue<RoomData> {
     }
 }
 
-export type OpenRoomMessage = {
-    $$type: 'OpenRoomMessage';
+export type OpenRoom = {
+    $$type: 'OpenRoom';
     room_key: bigint;
     entry_fee: bigint;
     winners_count: bigint;
 }
 
-export function storeOpenRoomMessage(src: OpenRoomMessage) {
+export function storeOpenRoom(src: OpenRoom) {
     return (builder: Builder) => {
         const b_0 = builder;
-        b_0.storeInt(src.room_key, 257);
-        b_0.storeInt(src.entry_fee, 257);
-        b_0.storeInt(src.winners_count, 257);
+        b_0.storeUint(2616294104, 32);
+        b_0.storeUint(src.room_key, 32);
+        b_0.storeCoins(src.entry_fee);
+        b_0.storeUint(src.winners_count, 8);
     };
 }
 
-export function loadOpenRoomMessage(slice: Slice) {
+export function loadOpenRoom(slice: Slice) {
     const sc_0 = slice;
-    const _room_key = sc_0.loadIntBig(257);
-    const _entry_fee = sc_0.loadIntBig(257);
-    const _winners_count = sc_0.loadIntBig(257);
-    return { $$type: 'OpenRoomMessage' as const, room_key: _room_key, entry_fee: _entry_fee, winners_count: _winners_count };
+    if (sc_0.loadUint(32) !== 2616294104) { throw Error('Invalid prefix'); }
+    const _room_key = sc_0.loadUintBig(32);
+    const _entry_fee = sc_0.loadCoins();
+    const _winners_count = sc_0.loadUintBig(8);
+    return { $$type: 'OpenRoom' as const, room_key: _room_key, entry_fee: _entry_fee, winners_count: _winners_count };
 }
 
-export function loadTupleOpenRoomMessage(source: TupleReader) {
+export function loadTupleOpenRoom(source: TupleReader) {
     const _room_key = source.readBigNumber();
     const _entry_fee = source.readBigNumber();
     const _winners_count = source.readBigNumber();
-    return { $$type: 'OpenRoomMessage' as const, room_key: _room_key, entry_fee: _entry_fee, winners_count: _winners_count };
+    return { $$type: 'OpenRoom' as const, room_key: _room_key, entry_fee: _entry_fee, winners_count: _winners_count };
 }
 
-export function loadGetterTupleOpenRoomMessage(source: TupleReader) {
+export function loadGetterTupleOpenRoom(source: TupleReader) {
     const _room_key = source.readBigNumber();
     const _entry_fee = source.readBigNumber();
     const _winners_count = source.readBigNumber();
-    return { $$type: 'OpenRoomMessage' as const, room_key: _room_key, entry_fee: _entry_fee, winners_count: _winners_count };
+    return { $$type: 'OpenRoom' as const, room_key: _room_key, entry_fee: _entry_fee, winners_count: _winners_count };
 }
 
-export function storeTupleOpenRoomMessage(source: OpenRoomMessage) {
+export function storeTupleOpenRoom(source: OpenRoom) {
     const builder = new TupleBuilder();
     builder.writeNumber(source.room_key);
     builder.writeNumber(source.entry_fee);
@@ -895,64 +750,225 @@ export function storeTupleOpenRoomMessage(source: OpenRoomMessage) {
     return builder.build();
 }
 
-export function dictValueParserOpenRoomMessage(): DictionaryValue<OpenRoomMessage> {
+export function dictValueParserOpenRoom(): DictionaryValue<OpenRoom> {
     return {
         serialize: (src, builder) => {
-            builder.storeRef(beginCell().store(storeOpenRoomMessage(src)).endCell());
+            builder.storeRef(beginCell().store(storeOpenRoom(src)).endCell());
         },
         parse: (src) => {
-            return loadOpenRoomMessage(src.loadRef().beginParse());
+            return loadOpenRoom(src.loadRef().beginParse());
         }
     }
 }
 
-export type EnterRoomMessage = {
-    $$type: 'EnterRoomMessage';
+export type EnterRoom = {
+    $$type: 'EnterRoom';
     room_key: bigint;
     entry_fee: bigint;
 }
 
-export function storeEnterRoomMessage(src: EnterRoomMessage) {
+export function storeEnterRoom(src: EnterRoom) {
     return (builder: Builder) => {
         const b_0 = builder;
-        b_0.storeInt(src.room_key, 257);
-        b_0.storeInt(src.entry_fee, 257);
+        b_0.storeUint(1380690280, 32);
+        b_0.storeUint(src.room_key, 32);
+        b_0.storeCoins(src.entry_fee);
     };
 }
 
-export function loadEnterRoomMessage(slice: Slice) {
+export function loadEnterRoom(slice: Slice) {
     const sc_0 = slice;
-    const _room_key = sc_0.loadIntBig(257);
-    const _entry_fee = sc_0.loadIntBig(257);
-    return { $$type: 'EnterRoomMessage' as const, room_key: _room_key, entry_fee: _entry_fee };
+    if (sc_0.loadUint(32) !== 1380690280) { throw Error('Invalid prefix'); }
+    const _room_key = sc_0.loadUintBig(32);
+    const _entry_fee = sc_0.loadCoins();
+    return { $$type: 'EnterRoom' as const, room_key: _room_key, entry_fee: _entry_fee };
 }
 
-export function loadTupleEnterRoomMessage(source: TupleReader) {
+export function loadTupleEnterRoom(source: TupleReader) {
     const _room_key = source.readBigNumber();
     const _entry_fee = source.readBigNumber();
-    return { $$type: 'EnterRoomMessage' as const, room_key: _room_key, entry_fee: _entry_fee };
+    return { $$type: 'EnterRoom' as const, room_key: _room_key, entry_fee: _entry_fee };
 }
 
-export function loadGetterTupleEnterRoomMessage(source: TupleReader) {
+export function loadGetterTupleEnterRoom(source: TupleReader) {
     const _room_key = source.readBigNumber();
     const _entry_fee = source.readBigNumber();
-    return { $$type: 'EnterRoomMessage' as const, room_key: _room_key, entry_fee: _entry_fee };
+    return { $$type: 'EnterRoom' as const, room_key: _room_key, entry_fee: _entry_fee };
 }
 
-export function storeTupleEnterRoomMessage(source: EnterRoomMessage) {
+export function storeTupleEnterRoom(source: EnterRoom) {
     const builder = new TupleBuilder();
     builder.writeNumber(source.room_key);
     builder.writeNumber(source.entry_fee);
     return builder.build();
 }
 
-export function dictValueParserEnterRoomMessage(): DictionaryValue<EnterRoomMessage> {
+export function dictValueParserEnterRoom(): DictionaryValue<EnterRoom> {
     return {
         serialize: (src, builder) => {
-            builder.storeRef(beginCell().store(storeEnterRoomMessage(src)).endCell());
+            builder.storeRef(beginCell().store(storeEnterRoom(src)).endCell());
         },
         parse: (src) => {
-            return loadEnterRoomMessage(src.loadRef().beginParse());
+            return loadEnterRoom(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type CloseRoom = {
+    $$type: 'CloseRoom';
+    room_key: bigint;
+}
+
+export function storeCloseRoom(src: CloseRoom) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(2943936156, 32);
+        b_0.storeUint(src.room_key, 32);
+    };
+}
+
+export function loadCloseRoom(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 2943936156) { throw Error('Invalid prefix'); }
+    const _room_key = sc_0.loadUintBig(32);
+    return { $$type: 'CloseRoom' as const, room_key: _room_key };
+}
+
+export function loadTupleCloseRoom(source: TupleReader) {
+    const _room_key = source.readBigNumber();
+    return { $$type: 'CloseRoom' as const, room_key: _room_key };
+}
+
+export function loadGetterTupleCloseRoom(source: TupleReader) {
+    const _room_key = source.readBigNumber();
+    return { $$type: 'CloseRoom' as const, room_key: _room_key };
+}
+
+export function storeTupleCloseRoom(source: CloseRoom) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.room_key);
+    return builder.build();
+}
+
+export function dictValueParserCloseRoom(): DictionaryValue<CloseRoom> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeCloseRoom(src)).endCell());
+        },
+        parse: (src) => {
+            return loadCloseRoom(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type DistributePayouts = {
+    $$type: 'DistributePayouts';
+    room_key: bigint;
+    winners_count: bigint;
+    winners: Dictionary<bigint, Address>;
+}
+
+export function storeDistributePayouts(src: DistributePayouts) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(3561099507, 32);
+        b_0.storeUint(src.room_key, 32);
+        b_0.storeUint(src.winners_count, 8);
+        b_0.storeDict(src.winners, Dictionary.Keys.BigInt(257), Dictionary.Values.Address());
+    };
+}
+
+export function loadDistributePayouts(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 3561099507) { throw Error('Invalid prefix'); }
+    const _room_key = sc_0.loadUintBig(32);
+    const _winners_count = sc_0.loadUintBig(8);
+    const _winners = Dictionary.load(Dictionary.Keys.BigInt(257), Dictionary.Values.Address(), sc_0);
+    return { $$type: 'DistributePayouts' as const, room_key: _room_key, winners_count: _winners_count, winners: _winners };
+}
+
+export function loadTupleDistributePayouts(source: TupleReader) {
+    const _room_key = source.readBigNumber();
+    const _winners_count = source.readBigNumber();
+    const _winners = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.Address(), source.readCellOpt());
+    return { $$type: 'DistributePayouts' as const, room_key: _room_key, winners_count: _winners_count, winners: _winners };
+}
+
+export function loadGetterTupleDistributePayouts(source: TupleReader) {
+    const _room_key = source.readBigNumber();
+    const _winners_count = source.readBigNumber();
+    const _winners = Dictionary.loadDirect(Dictionary.Keys.BigInt(257), Dictionary.Values.Address(), source.readCellOpt());
+    return { $$type: 'DistributePayouts' as const, room_key: _room_key, winners_count: _winners_count, winners: _winners };
+}
+
+export function storeTupleDistributePayouts(source: DistributePayouts) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.room_key);
+    builder.writeNumber(source.winners_count);
+    builder.writeCell(source.winners.size > 0 ? beginCell().storeDictDirect(source.winners, Dictionary.Keys.BigInt(257), Dictionary.Values.Address()).endCell() : null);
+    return builder.build();
+}
+
+export function dictValueParserDistributePayouts(): DictionaryValue<DistributePayouts> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeDistributePayouts(src)).endCell());
+        },
+        parse: (src) => {
+            return loadDistributePayouts(src.loadRef().beginParse());
+        }
+    }
+}
+
+export type ClaimReward = {
+    $$type: 'ClaimReward';
+    room_key: bigint;
+    winner_address: Address;
+}
+
+export function storeClaimReward(src: ClaimReward) {
+    return (builder: Builder) => {
+        const b_0 = builder;
+        b_0.storeUint(3468397897, 32);
+        b_0.storeUint(src.room_key, 32);
+        b_0.storeAddress(src.winner_address);
+    };
+}
+
+export function loadClaimReward(slice: Slice) {
+    const sc_0 = slice;
+    if (sc_0.loadUint(32) !== 3468397897) { throw Error('Invalid prefix'); }
+    const _room_key = sc_0.loadUintBig(32);
+    const _winner_address = sc_0.loadAddress();
+    return { $$type: 'ClaimReward' as const, room_key: _room_key, winner_address: _winner_address };
+}
+
+export function loadTupleClaimReward(source: TupleReader) {
+    const _room_key = source.readBigNumber();
+    const _winner_address = source.readAddress();
+    return { $$type: 'ClaimReward' as const, room_key: _room_key, winner_address: _winner_address };
+}
+
+export function loadGetterTupleClaimReward(source: TupleReader) {
+    const _room_key = source.readBigNumber();
+    const _winner_address = source.readAddress();
+    return { $$type: 'ClaimReward' as const, room_key: _room_key, winner_address: _winner_address };
+}
+
+export function storeTupleClaimReward(source: ClaimReward) {
+    const builder = new TupleBuilder();
+    builder.writeNumber(source.room_key);
+    builder.writeAddress(source.winner_address);
+    return builder.build();
+}
+
+export function dictValueParserClaimReward(): DictionaryValue<ClaimReward> {
+    return {
+        serialize: (src, builder) => {
+            builder.storeRef(beginCell().store(storeClaimReward(src)).endCell());
+        },
+        parse: (src) => {
+            return loadClaimReward(src.loadRef().beginParse());
         }
     }
 }
@@ -1077,7 +1093,7 @@ function initTreasury_init_args(src: Treasury_init_args) {
 }
 
 async function Treasury_init(owner: Address, upgrade_authority: Address) {
-    const __code = Cell.fromHex('b5ee9c7241021d0100098c000110ff0020e303f2c80b0101f830eda2edfb01d072d721d200d200fa4021103450666f04f86102f862ed44d0d200018e32fa40fa40810101d700d401d0810101d700f404810101d700f404f404810101d700d430d0810101d70030107a107910786c1a8e19fa40fa405902d1016d6d6d8100fa8127107054355545645003e20b925f0be029d749c21f0204c28e8e09d31f018210946a98b6bae30209de09f9012082f0f7f7c1c7a35dbbe41cbb35aa7d13ae03739219b763f8529bf693dc57abfdbec3bae3022082f023918e6c7fc5497b05e31986ff583a99314910879bd1ccfe3a465e83c3aa8628bae302200304070d00fed33f30c8018210aff90f5758cb1fcb3fc9108a10791068105710461035443012f84270705003804201503304c8cf8580ca00cf8440ce01fa02806acf40f400c901fb00c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54db31018e3032f8416f246c318020d721d431d31ffa00d307308109bd22c200f2f482009bd521c200f2f48138aa218103e8bbf2f482009d4a23c200f2f4258101012459f40d6fa192306ddf0501b8206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2816b0f016ef2f471705300f823210706050443138101015028c80601aa55705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc922103601206e953059f45a30944133f415e210791068105710465035141c01fe30f8416f246c318020d721d431d31ffa0030258101012359f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e281508a216eb3f2f4206ef2d0806f288116fb26c001f2f4278200e4850a0803feba19f2f426f8416f24135f038200c8975112baf2f4205613a85614a90466a115a003a4106710571047028101015029c855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc91713206e953059f45a30944133f415e224c200e30f1079090b0c017a885449667070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb000a001a00000000486f7573652046656500023400785516c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed5404e482f078f481cc938c19046a2dbeed444b8cf7b65aa38154efdaef2a7d5dd15d2dab6cbae3022082f03eefb0952b6918ad8b478603bade6f3639a4230c05b7f2e2282ffa77fede55e5bae3022082f098e91200d96b01eb7c70c724a4d16a71e36dd0752ec2220accce37d2ea4be77cbae302200e10131801fc30f8416f246c318020d721d431d31f30248101012259f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f28308116fb05c00115f2f470f82310670f01be10571443308101015088c855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9103612206e953059f45a30944133f415e210791068105710464435121c01fc30f8416f246c318020d721d431d31fd307268101012459f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f288200c69d06c00016f2f481416f021101c0c00012f2f48200f4a75385baf2f427a45280a8ab00237093530ab98e2e09fa4053baa15230a824a904102f81010b02111001810101216e955b59f4593098c801cf004133f441e209a4109de85f03363672f823105614435010278101015028c81201a855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9103612206e953059f45a30944133f415e210791068105710464435121c01fe30f8416f246c318020d721d431d31ffa403081010154461359f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f2810565f068127e732c002f2f4221403fe81010b228101014133f40a6fa19401d70030925b6de2811851216eb3f2f4702381010b248101014133f40a6fa19401d70030925b6de2206eb39631206ef2d0809130e201206ef2d08021a18200a88121c200f2f488702454433070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf818ae215161700200000000052657761726420436c61696d001a58cf8680cf8480f400f400cf8100c0f400c901fb000181010b02a012810101216e955b59f4593098c801cf004133f441e210795516c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed5401ec82f0ae1f55287d6c4d2042cc5941a8a23c971d49bf5e554d4fa78ae730638e083cb7ba8e5030f8416f24135f0316a0107910680710461035443012c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54e019015482f07e9a4e9c4db87f8cc634e496e2f129f07172c3894b3498755d7d69745e4ba895bae3025f0af2c0821a02cc7a8200bfb827c200f2f405a406ab005206a9043524c2008ebef8428841607070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb009134e21068105770071056103544301b1c002c00000000546f702053636f7265722041697264726f700074c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed5411618009');
+    const __code = Cell.fromHex('b5ee9c7241023701000d3d000228ff008e88f4a413f4bcf2c80bed5320e303ed43d9011e0202710210020120030e020120040c020120050701bdb2773b5134348000638cbe903e9020404075c035007420404075c03d0120404075c03d013d0120404075c0350c3420404075c00c041e841e441e1b06a3867e903e901640b4405b5b5b60403ea049c41c150d5551591400f8954676cf1b28600600303181010b25028101014133f40a6fa19401d70030925b6de2020273080a01e7a387b5134348000638cbe903e9020404075c035007420404075c03d0120404075c03d013d0120404075c0350c3420404075c00c041e841e441e1b06a3867e903e901640b4405b5b5b60403ea049c41c150d5551591400f8954276cf1b28481ba48c1b66481bbcb4201bca1bc238881ba48c1b77a0900a0810101270259f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e201b7a0f3b5134348000638cbe903e9020404075c035007420404075c03d0120404075c03d013d0120404075c0350c3420404075c00c041e841e441e1b06a3867e903e901640b4405b5b5b60403ea049c41c150d5551591400f8b6cf1b2860b00022001b9b73f5da89a1a400031c65f481f481020203ae01a803a1020203ae01e809020203ae01e809e809020203ae01a861a1020203ae006020f420f220f0d8351c33f481f480b205a202dadadb0201f5024e20e0a86aaa8ac8a007c5b678d94300d00022401b9bb2c8ed44d0d200018e32fa40fa40810101d700d401d0810101d700f404810101d700f404f404810101d700d430d0810101d70030107a107910786c1a8e19fa40fa405902d1016d6d6d8100fa8127107054355545645003e2db3c6ca180f000227020120111301b9b8e89ed44d0d200018e32fa40fa40810101d700d401d0810101d700f404810101d700f404f404810101d700d430d0810101d70030107a107910786c1a8e19fa40fa405902d1016d6d6d8100fa8127107054355545645003e2db3c6ca1812000229020158141c020120151a020120161801b8a8c7ed44d0d200018e32fa40fa40810101d700d401d0810101d700f404810101d700f404f404810101d700d430d0810101d70030107a107910786c1a8e19fa40fa405902d1016d6d6d8100fa8127107054355545645003e2db3c6ca11700022101b8a889ed44d0d200018e32fa40fa40810101d700d401d0810101d700f404810101d700f404f404810101d700d430d0810101d70030107a107910786c1a8e19fa40fa405902d1016d6d6d8100fa8127107054355545645003e2db3c6ca11900022601bdac26f6a268690000c7197d207d20408080eb806a00e8408080eb807a02408080eb807a027a02408080eb806a1868408080eb8018083d083c883c360d470cfd207d202c816880b6b6b6c0807d409388382a1aaaa2b22801f12a8ced9e3650c01b00303181010b24028101014133f40a6fa19401d70030925b6de201b9b3ce7b5134348000638cbe903e9020404075c035007420404075c03d0120404075c03d013d0120404075c0350c3420404075c00c041e841e441e1b06a3867e903e901640b4405b5b5b60403ea049c41c150d5551591400f8b6cf1b28601d00022801f830eda2edfb01d072d721d200d200fa4021103450666f04f86102f862ed44d0d200018e32fa40fa40810101d700d401d0810101d700f404810101d700f404f404810101d700d430d0810101d70030107a107910786c1a8e19fa40fa405902d1016d6d6d8100fa8127107054355545645003e20b925f0be0702ad749201f03eec21fe30021c00021c121b08e405b3910795516c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54e00bf9012082f0ae1f55287d6c4d2042cc5941a8a23c971d49bf5e554d4fa78ae730638e083cb7bae3022032330454310ad31f2182109bf17ad8bae302218210524ba968bae302218210af78e69cbae302218210d44210f3ba2123272801fe31343902d31ffa00d307308109bd22c200f2f482009bd521c200f2f48138aa218103e8bbf2f482009d4a23c200f2f4258101012459f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e22201de816b0f016ef2f471705300f823210706050443138101015028c855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc922103601206e953059f45a30944133f415e210791068105710465035142b01fc313a09d31ffa0030258101012359f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e281508a216eb3f2f4206ef2d0806f288116fb26c001f2f4278200e4850aba19f2f426f8416f242402f4135f038200c8975112baf2f4205613a85614a90466a115a003a4106710571047028101015029c855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc91713206e953059f45a30944133f415e224c2009134e30d10795516252b017a885449667070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb0026001a00000000486f7573652046656501fe313a09d31f30248101012259f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f28308116fb05c00115f2f470f823106710571443308101015088c82a02fe8efc313a09d31fd307f40430268101012459f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f288200c69d06c00016f2f481416f02c00012f2f4e0292c01c08200f4a75385baf2f45327a90470098e3b278101012a59f40c6fa192306ddf206eb38e2281010b01206ef2d08022103e810101216e955b59f4593098c801cf004133f441e20b9130e208a408e430363672f823105614435010278101015028c82a01a855705078810101cf0015810101cf0013810101cf0001c8810101cf0012810101cf0012810101cf0002c8810101cf0013810101cf00cdcdc9103612206e953059f45a30944133f415e210791068105710464435122b0078c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54db310116218210cebb8d49bae3020b2d01f8313a09d31ffa403081010154461359f40d6fa192306ddf206e92306d8e3ad0810101d700810101d700810101d700d401d0810101d700810101d700810101d700d430d0810101d700810101d700301058105710566c186f08e2813717216eb3f2f4206ef2d0806f2810565f068127e732c002f2f42281010b228101012e03fe4133f40a6fa19401d70030925b6de2811851216eb3f2f4702381010b248101014133f40a6fa19401d70030925b6de2206eb39631206ef2d0809130e201206ef2d08021a18200a88121c200f2f488702454433070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf818ae2f400c901fb00012f303100200000000052657761726420436c61696d001a58cf8680cf8480f400f400cf8100b681010b02a012810101216e955b59f4593098c801cf004133f441e210795516c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54db3100a25b39f8416f24135f0316a0107910680710461035443012c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed5401f082f07e9a4e9c4db87f8cc634e496e2f129f07172c3894b3498755d7d69745e4ba895bae302c0008e4809c21f8e4010795516c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed54db31e05f0a925f0be2f2c0823402cc30398200bfb826c200f2f404a405ab00207aa9043120c2008ebdf84288127070046d03046d5023c8cf8580ca00cf8440ce01fa028069cf40025c6e016eb0935bcf819d58cf8680cf8480f400f400cf81e2f400c901fb009130e21068105770071056103544303536002c00000000546f702053636f7265722041697264726f700074c87f01ca005590509ace17ce15810101cf0003c8810101cf0012f400810101cf0012f40012f40012810101cf0002c8810101cf0012cdcdc9ed546269dd63');
     const builder = beginCell();
     builder.storeUint(0, 1);
     initTreasury_init_args({ $$type: 'Treasury_init_args', owner, upgrade_authority })(builder);
@@ -1208,36 +1224,59 @@ const Treasury_types: ABIType[] = [
     {"name":"StdAddress","header":null,"fields":[{"name":"workchain","type":{"kind":"simple","type":"int","optional":false,"format":8}},{"name":"address","type":{"kind":"simple","type":"uint","optional":false,"format":256}}]},
     {"name":"VarAddress","header":null,"fields":[{"name":"workchain","type":{"kind":"simple","type":"int","optional":false,"format":32}},{"name":"address","type":{"kind":"simple","type":"slice","optional":false}}]},
     {"name":"BasechainAddress","header":null,"fields":[{"name":"hash","type":{"kind":"simple","type":"int","optional":true,"format":257}}]},
-    {"name":"Deploy","header":2490013878,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
-    {"name":"DeployOk","header":2952335191,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}}]},
-    {"name":"FactoryDeploy","header":1829761339,"fields":[{"name":"queryId","type":{"kind":"simple","type":"uint","optional":false,"format":64}},{"name":"cashback","type":{"kind":"simple","type":"address","optional":false}}]},
     {"name":"RoomData","header":null,"fields":[{"name":"entry_fee","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"winners_count","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"status","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"pool","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"total_entries","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"paid_hash","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"created_at","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"closed_at","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
-    {"name":"OpenRoomMessage","header":null,"fields":[{"name":"room_key","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"entry_fee","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"winners_count","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
-    {"name":"EnterRoomMessage","header":null,"fields":[{"name":"room_key","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"entry_fee","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
+    {"name":"OpenRoom","header":2616294104,"fields":[{"name":"room_key","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"entry_fee","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}},{"name":"winners_count","type":{"kind":"simple","type":"uint","optional":false,"format":8}}]},
+    {"name":"EnterRoom","header":1380690280,"fields":[{"name":"room_key","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"entry_fee","type":{"kind":"simple","type":"uint","optional":false,"format":"coins"}}]},
+    {"name":"CloseRoom","header":2943936156,"fields":[{"name":"room_key","type":{"kind":"simple","type":"uint","optional":false,"format":32}}]},
+    {"name":"DistributePayouts","header":3561099507,"fields":[{"name":"room_key","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"winners_count","type":{"kind":"simple","type":"uint","optional":false,"format":8}},{"name":"winners","type":{"kind":"dict","key":"int","value":"address"}}]},
+    {"name":"ClaimReward","header":3468397897,"fields":[{"name":"room_key","type":{"kind":"simple","type":"uint","optional":false,"format":32}},{"name":"winner_address","type":{"kind":"simple","type":"address","optional":false}}]},
     {"name":"Treasury$Data","header":null,"fields":[{"name":"owner","type":{"kind":"simple","type":"address","optional":false}},{"name":"upgrade_authority","type":{"kind":"simple","type":"address","optional":false}},{"name":"airdrop_pool","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"airdrop_id","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"rooms","type":{"kind":"dict","key":"int","value":"RoomData","valueFormat":"ref"}},{"name":"current_room_id","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"winner_rewards","type":{"kind":"dict","key":"address","value":"int"}},{"name":"claimed_rewards","type":{"kind":"dict","key":"address","value":"int"}},{"name":"HOUSE_FEE_BPS","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"HOUSE_FEE_DENOMINATOR","type":{"kind":"simple","type":"int","optional":false,"format":257}}]},
 ]
 
 const Treasury_opcodes = {
-    "Deploy": 2490013878,
-    "DeployOk": 2952335191,
-    "FactoryDeploy": 1829761339,
+    "OpenRoom": 2616294104,
+    "EnterRoom": 1380690280,
+    "CloseRoom": 2943936156,
+    "DistributePayouts": 3561099507,
+    "ClaimReward": 3468397897,
 }
 
 const Treasury_getters: ABIGetter[] = [
+    {"name":"getOwner","methodId":102025,"arguments":[],"returnType":{"kind":"simple","type":"address","optional":false}},
+    {"name":"getUpgradeAuthority","methodId":130873,"arguments":[],"returnType":{"kind":"simple","type":"address","optional":false}},
+    {"name":"getAirdropPool","methodId":94920,"arguments":[],"returnType":{"kind":"simple","type":"int","optional":false,"format":257}},
+    {"name":"getAirdropId","methodId":124041,"arguments":[],"returnType":{"kind":"simple","type":"int","optional":false,"format":257}},
+    {"name":"getCurrentRoomId","methodId":80378,"arguments":[],"returnType":{"kind":"simple","type":"int","optional":false,"format":257}},
+    {"name":"getHouseFeeBps","methodId":123079,"arguments":[],"returnType":{"kind":"simple","type":"int","optional":false,"format":257}},
+    {"name":"getHouseFeeDenominator","methodId":71484,"arguments":[],"returnType":{"kind":"simple","type":"int","optional":false,"format":257}},
+    {"name":"getRoomData","methodId":71393,"arguments":[{"name":"room_key","type":{"kind":"simple","type":"int","optional":false,"format":257}}],"returnType":{"kind":"simple","type":"RoomData","optional":true}},
+    {"name":"getWinnerReward","methodId":68060,"arguments":[{"name":"_","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"addr","type":{"kind":"simple","type":"address","optional":false}}],"returnType":{"kind":"simple","type":"int","optional":true,"format":257}},
+    {"name":"getClaimedReward","methodId":125005,"arguments":[{"name":"_","type":{"kind":"simple","type":"int","optional":false,"format":257}},{"name":"addr","type":{"kind":"simple","type":"address","optional":false}}],"returnType":{"kind":"simple","type":"int","optional":true,"format":257}},
 ]
 
 export const Treasury_getterMapping: { [key: string]: string } = {
+    'getOwner': 'getGetOwner',
+    'getUpgradeAuthority': 'getGetUpgradeAuthority',
+    'getAirdropPool': 'getGetAirdropPool',
+    'getAirdropId': 'getGetAirdropId',
+    'getCurrentRoomId': 'getGetCurrentRoomId',
+    'getHouseFeeBps': 'getGetHouseFeeBps',
+    'getHouseFeeDenominator': 'getGetHouseFeeDenominator',
+    'getRoomData': 'getGetRoomData',
+    'getWinnerReward': 'getGetWinnerReward',
+    'getClaimedReward': 'getGetClaimedReward',
 }
 
 const Treasury_receivers: ABIReceiver[] = [
-    {"receiver":"internal","message":{"kind":"text","text":"open_room_params"}},
-    {"receiver":"internal","message":{"kind":"text","text":"enter_room_params"}},
-    {"receiver":"internal","message":{"kind":"text","text":"close_room_params"}},
-    {"receiver":"internal","message":{"kind":"text","text":"distribute_payouts_params"}},
-    {"receiver":"internal","message":{"kind":"text","text":"claim_reward_params"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"OpenRoom"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"EnterRoom"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"CloseRoom"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"DistributePayouts"}},
+    {"receiver":"internal","message":{"kind":"typed","type":"ClaimReward"}},
+    {"receiver":"internal","message":{"kind":"empty"}},
+    {"receiver":"internal","message":{"kind":"text"}},
     {"receiver":"internal","message":{"kind":"text","text":"fund_airdrop"}},
     {"receiver":"internal","message":{"kind":"text","text":"distribute_airdrop"}},
-    {"receiver":"internal","message":{"kind":"typed","type":"Deploy"}},
 ]
 
 
@@ -1275,22 +1314,28 @@ export class Treasury implements Contract {
         this.init = init;
     }
     
-    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: "open_room_params" | "enter_room_params" | "close_room_params" | "distribute_payouts_params" | "claim_reward_params" | "fund_airdrop" | "distribute_airdrop" | Deploy) {
+    async send(provider: ContractProvider, via: Sender, args: { value: bigint, bounce?: boolean| null | undefined }, message: OpenRoom | EnterRoom | CloseRoom | DistributePayouts | ClaimReward | null | string | "fund_airdrop" | "distribute_airdrop") {
         
         let body: Cell | null = null;
-        if (message === "open_room_params") {
-            body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'OpenRoom') {
+            body = beginCell().store(storeOpenRoom(message)).endCell();
         }
-        if (message === "enter_room_params") {
-            body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'EnterRoom') {
+            body = beginCell().store(storeEnterRoom(message)).endCell();
         }
-        if (message === "close_room_params") {
-            body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'CloseRoom') {
+            body = beginCell().store(storeCloseRoom(message)).endCell();
         }
-        if (message === "distribute_payouts_params") {
-            body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'DistributePayouts') {
+            body = beginCell().store(storeDistributePayouts(message)).endCell();
         }
-        if (message === "claim_reward_params") {
+        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'ClaimReward') {
+            body = beginCell().store(storeClaimReward(message)).endCell();
+        }
+        if (message === null) {
+            body = new Cell();
+        }
+        if (typeof message === 'string') {
             body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
         }
         if (message === "fund_airdrop") {
@@ -1299,13 +1344,86 @@ export class Treasury implements Contract {
         if (message === "distribute_airdrop") {
             body = beginCell().storeUint(0, 32).storeStringTail(message).endCell();
         }
-        if (message && typeof message === 'object' && !(message instanceof Slice) && message.$$type === 'Deploy') {
-            body = beginCell().store(storeDeploy(message)).endCell();
-        }
         if (body === null) { throw new Error('Invalid message type'); }
         
         await provider.internal(via, { ...args, body: body });
         
+    }
+    
+    async getGetOwner(provider: ContractProvider) {
+        const builder = new TupleBuilder();
+        const source = (await provider.get('getOwner', builder.build())).stack;
+        const result = source.readAddress();
+        return result;
+    }
+    
+    async getGetUpgradeAuthority(provider: ContractProvider) {
+        const builder = new TupleBuilder();
+        const source = (await provider.get('getUpgradeAuthority', builder.build())).stack;
+        const result = source.readAddress();
+        return result;
+    }
+    
+    async getGetAirdropPool(provider: ContractProvider) {
+        const builder = new TupleBuilder();
+        const source = (await provider.get('getAirdropPool', builder.build())).stack;
+        const result = source.readBigNumber();
+        return result;
+    }
+    
+    async getGetAirdropId(provider: ContractProvider) {
+        const builder = new TupleBuilder();
+        const source = (await provider.get('getAirdropId', builder.build())).stack;
+        const result = source.readBigNumber();
+        return result;
+    }
+    
+    async getGetCurrentRoomId(provider: ContractProvider) {
+        const builder = new TupleBuilder();
+        const source = (await provider.get('getCurrentRoomId', builder.build())).stack;
+        const result = source.readBigNumber();
+        return result;
+    }
+    
+    async getGetHouseFeeBps(provider: ContractProvider) {
+        const builder = new TupleBuilder();
+        const source = (await provider.get('getHouseFeeBps', builder.build())).stack;
+        const result = source.readBigNumber();
+        return result;
+    }
+    
+    async getGetHouseFeeDenominator(provider: ContractProvider) {
+        const builder = new TupleBuilder();
+        const source = (await provider.get('getHouseFeeDenominator', builder.build())).stack;
+        const result = source.readBigNumber();
+        return result;
+    }
+    
+    async getGetRoomData(provider: ContractProvider, room_key: bigint) {
+        const builder = new TupleBuilder();
+        builder.writeNumber(room_key);
+        const source = (await provider.get('getRoomData', builder.build())).stack;
+        const result_p = source.readTupleOpt();
+        const result = result_p ? loadTupleRoomData(result_p) : null;
+        return result;
+    }
+    
+    async getGetWinnerReward(provider: ContractProvider, _: bigint, addr: Address) {
+        const builder = new TupleBuilder();
+        builder.writeNumber(_);
+        builder.writeAddress(addr);
+        const source = (await provider.get('getWinnerReward', builder.build())).stack;
+        const result = source.readBigNumberOpt();
+        return result;
+    }
+    
+    async getGetClaimedReward(provider: ContractProvider, _: bigint, addr: Address) {
+        const builder = new TupleBuilder();
+        builder.writeNumber(_);
+        builder.writeAddress(addr);
+        const source = (await provider.get('getClaimedReward', builder.build())).stack;
+        const result = source.readBigNumberOpt();
+        return result;
     }
     
 }

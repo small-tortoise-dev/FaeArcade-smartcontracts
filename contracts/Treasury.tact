@@ -1,10 +1,19 @@
-import "@stdlib/deploy";
+// =======================================================
+//  FAE Arcade Treasury Contract
+//  Author: <you>
+//  Network: TON Testnet
+//  Purpose: Manage arcade rooms, entry fees, and rewards
+// =======================================================
 
-// Room data structure (must be top-level in Tact)
+// -------------------------------
+// Struct Definitions
+// -------------------------------
+
+// Room data structure (top-level in Tact)
 struct RoomData {
     entry_fee: Int;
     winners_count: Int;
-    status: Int; // 0=Closed, 1=Open, 2=Paid
+    status: Int;         // 0 = Closed, 1 = Open, 2 = Paid
     pool: Int;
     total_entries: Int;
     paid_hash: Int;
@@ -12,88 +21,95 @@ struct RoomData {
     closed_at: Int;
 }
 
-// Message structures for external calls
-struct OpenRoomMessage {
-    room_key: Int;
-    entry_fee: Int;
-    winners_count: Int;
+// -------------------------------
+// Opcode-based Message Structures
+// -------------------------------
+
+message OpenRoom {
+    room_key: Int as uint32;
+    entry_fee: Int as coins;
+    winners_count: Int as uint8;
 }
 
-struct EnterRoomMessage {
-    room_key: Int;
-    entry_fee: Int;
+message EnterRoom {
+    room_key: Int as uint32;
+    entry_fee: Int as coins;
 }
 
-// FAE Arcade Treasury Contract - Complete Implementation
-contract Treasury with Deployable {
-    
-    // State variables
+message CloseRoom {
+    room_key: Int as uint32;
+}
+
+message DistributePayouts {
+    room_key: Int as uint32;
+    winners_count: Int as uint8;
+    winners: map<Int, Address>;  // index -> winner address
+}
+
+message ClaimReward {
+    room_key: Int as uint32;
+    winner_address: Address;
+}
+
+// -------------------------------
+// Contract Definition
+// -------------------------------
+contract Treasury {
+
+    // Persistent State
     owner: Address;
     upgrade_authority: Address;
-    
-    // Treasury pools
+
+    // Treasury pools and bookkeeping
     airdrop_pool: Int;
     airdrop_id: Int;
-    
-    // Multi-room support with proper data structure
+
+    // Multi-room data
     rooms: map<Int, RoomData>;
     current_room_id: Int;
-    
-    // Winner rewards tracking (pull-based payouts) - simplified approach
-    winner_rewards: map<Address, Int>; // winner_address -> reward_amount (per room)
-    claimed_rewards: map<Address, Int>; // winner_address -> claimed_amount (per room)
-    
+
+    // Winner tracking (pull-based)
+    winner_rewards: map<Address, Int>;  // Address -> reward amount
+    claimed_rewards: map<Address, Int>; // Address -> total claimed
+
     // Constants
-    HOUSE_FEE_BPS: Int = 250; // 2.5%
+    HOUSE_FEE_BPS: Int = 250;        // 2.5%
     HOUSE_FEE_DENOMINATOR: Int = 10000;
-    
+
+    // -------------------------------
     // Constructor
+    // -------------------------------
     init(owner: Address, upgrade_authority: Address) {
         self.owner = owner;
         self.upgrade_authority = upgrade_authority;
         self.airdrop_pool = 0;
         self.airdrop_id = 0;
         self.current_room_id = 0;
+        // Maps are auto-initialized empty
     }
-    
-    // Note: parseTextMessage helper removed due to Tact slice mutability issues
-    
-    // External message handlers
-    
-    
-    // Open room with specific parameters (text message with parameters)
-    receive("open_room_params") {
-        // Parse message body for parameters
-        // The body format is: opcode (32 bits) + reference to string + parameters
-        // Tact automatically handles the receive("string") matching
-        let slice = context().raw;
-        
-        // Skip opcode (32 bits)
-        slice.skipBits(32);
-        
-        // Skip the string reference (Tact has already matched "open_room_params")
-        // The backend uses storeStringRefTail which stores the string in a reference
-        slice.skipRef();
-        
-        // Now parse the actual parameters
-        let room_key: Int = slice.loadUint(32);
-        let entry_fee: Int = slice.loadCoins();
-        let winners_count: Int = slice.loadUint(8);
-        
-        // Validate parameters
-        require(entry_fee > 0, "Entry fee must be positive");
-        require(winners_count > 0, "Winners count must be positive");
-        require(winners_count <= 1000, "Too many winners");
-        require(room_key > 0, "Room key must be positive");
-        
-        // Check if room already exists
-        let existing_room: RoomData? = self.rooms.get(room_key);
+
+    // =======================================================
+    //  Room Management
+    // =======================================================
+
+    // -------------------------------
+    // Open new room
+    // -------------------------------
+    receive(msg: OpenRoom) {
+        // Parameter validation
+        require(msg.entry_fee > 0, "Entry fee must be positive");
+        require(msg.winners_count > 0, "Winners count must be positive");
+        require(msg.winners_count <= 1000, "Too many winners");
+        require(msg.room_key > 0, "Room key must be positive");
+
+        // Prevent duplicate room
+        let existing_room: RoomData? = self.rooms.get(msg.room_key);
         require(existing_room == null, "Room already exists");
-        
-        // Create new room
+
+        // Create and save room
         let new_room: RoomData = RoomData{
-            entry_fee: entry_fee,
-            winners_count: winners_count,
+            entry_fee: msg.entry_fee,
+            winners_count: msg.winners_count,
             status: 1, // Open
             pool: 0,
             total_entries: 0,
@@ -101,57 +117,38 @@ contract Treasury with Deployable {
             created_at: now(),
             closed_at: 0
         };
-        
-        self.rooms.set(room_key, new_room);
-        self.current_room_id = room_key;
+
+        self.rooms.set(msg.room_key, new_room);
+        self.current_room_id = msg.room_key;
     }
-    
-    
-    // User enters a paid room with specific parameters (text message with parameters)
-    receive("enter_room_params") {
-        // Parse message body for parameters using context().raw
-        let slice = context().raw;
-        slice.skipBits(32); // Skip opcode
-        
-        // Skip the string reference
-        slice.skipRef();
-        
-        // Now parse the actual parameters
-        let room_key: Int = slice.loadUint(32);
-        let expected_entry_fee: Int = slice.loadCoins();
-        
-        // Get room data
-        let room: RoomData? = self.rooms.get(room_key);
-        
-        // Room must exist before entry - no auto-creation in entry handler
+
+    // -------------------------------
+    // Enter an existing room
+    // -------------------------------
+    receive(msg: EnterRoom) {
+        let room: RoomData? = self.rooms.get(msg.room_key);
         require(room != null, "Room does not exist");
-        
-        // Room exists - process entry payment
+
         let room_data: RoomData = room!!;
         require(room_data.status == 1, "Room is not open");
-        
-        // For existing rooms, entry fees must match exactly
-        require(room_data.entry_fee == expected_entry_fee, "Entry fee mismatch");
+        require(room_data.entry_fee == msg.entry_fee, "Entry fee mismatch");
+
         let actual_entry_fee: Int = room_data.entry_fee;
-        
-        // Validate entry fee - contract should receive exactly the entry fee (no overpayment allowed)
-        let received_amount: Int = context().value;
-        require(received_amount == actual_entry_fee, "Entry fee must be exact amount");
-        
-        // Calculate house fee (2.5%) based on actual entry fee
+        let received: Int = context().value;
+
+        // Must pay exact entry fee
+        require(received == actual_entry_fee, "Entry fee must be exact amount");
+
+        // Fee split
         let house_fee: Int = (actual_entry_fee * self.HOUSE_FEE_BPS) / self.HOUSE_FEE_DENOMINATOR;
-        
-        // Calculate pool contribution (97.5%) based on actual entry fee  
         let pool_contribution: Int = actual_entry_fee - house_fee;
-        
-        // Update room data (pool is tracked in state)
-        room_data.pool = room_data.pool + pool_contribution;
-        room_data.total_entries = room_data.total_entries + 1;
-        
-        // Save the updated room data
-        self.rooms.set(room_key, room_data);
-        
-        // Send house fee to owner wallet
+
+        // Update pool + entries
+        room_data.pool += pool_contribution;
+        room_data.total_entries += 1;
+        self.rooms.set(msg.room_key, room_data);
+
+        // Send house fee to owner
         if (house_fee > 0) {
             send(SendParameters{
                 to: self.owner,
@@ -160,164 +157,117 @@ contract Treasury with Deployable {
                 bounce: false
             });
         }
-        
-        // The pool contribution stays in the contract balance automatically
-        // No excess refund logic needed since we require exact payment
     }
-    
-    // Close a room (text message with parameters)
-    receive("close_room_params") {
-        // Parse message body for room key using context().raw
-        let slice = context().raw;
-        slice.skipBits(32); // Skip opcode
-        
-        // Skip the string reference
-        slice.skipRef();
-        
-        // Now parse the actual parameters
-        let room_key: Int = slice.loadUint(32);
-        
-        // Get room data
-        let room: RoomData? = self.rooms.get(room_key);
+
+    // -------------------------------
+    // Close room
+    // -------------------------------
+    receive(msg: CloseRoom) {
+        let room: RoomData? = self.rooms.get(msg.room_key);
         require(room != null, "Room not found");
-        
+
         let room_data: RoomData = room!!;
         require(room_data.status == 1, "Room is not open");
-        
-        // Close room
-        room_data.status = 0; // Closed
+
+        room_data.status = 0;
         room_data.closed_at = now();
-        
-        self.rooms.set(room_key, room_data);
+        self.rooms.set(msg.room_key, room_data);
     }
-    
-    
-    // Distribute payouts with linear weights (pull-based) - text message with parameters
-    receive("distribute_payouts_params") {
-        // Parse message body for parameters using context().raw
-        let slice = context().raw;
-        slice.skipBits(32); // Skip opcode
-        
-        // Skip the string reference
-        slice.skipRef();
-        
-        // Now parse the actual parameters
-        let room_key: Int = slice.loadUint(32);
-        let winners_count: Int = slice.loadUint(8);
-        
-        // Get room data
-        let room: RoomData? = self.rooms.get(room_key);
+
+    // -------------------------------
+    // Distribute payouts (linear weighting)
+    // -------------------------------
+    receive(msg: DistributePayouts) {
+        let room: RoomData? = self.rooms.get(msg.room_key);
         require(room != null, "Room not found");
-        
+
         let room_data: RoomData = room!!;
         require(room_data.status == 0, "Room is not closed");
         require(room_data.paid_hash == 0, "Room already paid");
-        require(winners_count == room_data.winners_count, "Winners count mismatch");
-        
-        // Calculate linear weights
-        let total_weight: Int = (winners_count * (winners_count + 1)) / 2;
+        require(msg.winners_count == room_data.winners_count, "Winners count mismatch");
+
         let remaining_pool: Int = room_data.pool;
-        
-        // Parse winners and distribute rewards
+        let per_winner: Int = remaining_pool / msg.winners_count;
+
+        // Store winners with equal split
         let i: Int = 0;
-        while (i < winners_count) {
-            let winner_address: Address = slice.loadAddress();
-            let weight: Int = winners_count - i; // Linear weight: 1st gets highest weight
-            
-            // Calculate reward amount
-            let reward_amount: Int = (remaining_pool * weight) / total_weight;
-            
-            // Store reward for later claiming using direct address mapping
-            self.winner_rewards.set(winner_address, reward_amount);
-            
-            i = i + 1;
+        repeat (msg.winners_count) {
+            let winner_address: Address? = msg.winners.get(i);
+            if (winner_address != null) {
+                self.winner_rewards.set(winner_address!!, per_winner);
+            }
+            i += 1;
         }
-        
-        // Mark room as paid
-        room_data.status = 2; // Paid
-        room_data.paid_hash = now(); // Use timestamp as hash
-        self.rooms.set(room_key, room_data);
+
+        room_data.status = 2;
+        room_data.paid_hash = now();
+        self.rooms.set(msg.room_key, room_data);
     }
-    
-    // Claim reward (pull-based) - text message with parameters
-    receive("claim_reward_params") {
-        // Parse message body for parameters using context().raw
-        let slice = context().raw;
-        slice.skipBits(32); // Skip opcode
-        
-        // Skip the string reference
-        slice.skipRef();
-        
-        // Now parse the actual parameters
-        let room_key: Int = slice.loadUint(32);
-        let winner_address: Address = slice.loadAddress();
-        
-        // Get room data
-        let room: RoomData? = self.rooms.get(room_key);
+
+    // =======================================================
+    //  Reward Claiming
+    // =======================================================
+    receive(msg: ClaimReward) {
+        let room: RoomData? = self.rooms.get(msg.room_key);
         require(room != null, "Room not found");
-        
+
         let room_data: RoomData = room!!;
         require(room_data.status == 2, "Room is not paid");
-        
-        // Get winner rewards using direct address mapping
-        let reward_amount: Int? = self.winner_rewards.get(winner_address);
+
+        let reward_amount: Int? = self.winner_rewards.get(msg.winner_address);
         require(reward_amount != null, "No reward for this address");
-        
-        // Check if already claimed
+
         let already_claimed: Int = 0;
-        let claimed_amount: Int? = self.claimed_rewards.get(winner_address);
-        if (claimed_amount != null) {
-            already_claimed = claimed_amount!!;
+        let claimed: Int? = self.claimed_rewards.get(msg.winner_address);
+        if (claimed != null) {
+            already_claimed = claimed!!;
         }
-        
-        let remaining_reward: Int = reward_amount!! - already_claimed;
-        require(remaining_reward > 0, "No remaining reward to claim");
-        
-        // Send reward to winner
+
+        let remaining: Int = reward_amount!! - already_claimed;
+        require(remaining > 0, "No remaining reward to claim");
+
         send(SendParameters{
-            to: winner_address,
-            value: remaining_reward,
+            to: msg.winner_address,
+            value: remaining,
             body: "Reward Claim".asComment(),
             bounce: false
         });
-        
-        // Update claimed amount
-        self.claimed_rewards.set(winner_address, already_claimed + remaining_reward);
+
+        self.claimed_rewards.set(msg.winner_address, already_claimed + remaining);
     }
-    
-    // Fund the airdrop pool
+
+    // =======================================================
+    //  Airdrop Logic
+    // =======================================================
+
+    // Default receive handler for empty messages (deployment, simple transfers)
+    receive() {
+        // Accept empty messages - this is needed for deployment
+        // and simple TON transfers to the contract
+    }
+
+    // Fallback receiver for any text comment (accepts donations/transfers)
+    receive(msg: String) {
+        // Accept any text message as a donation to the contract
+        // This prevents bounces when users send TON with comments
+    }
+
     receive("fund_airdrop") {
-        self.airdrop_pool = self.airdrop_pool + context().value;
+        self.airdrop_pool += context().value;
     }
-    
-    // Distribute airdrop rewards - text message
+
     receive("distribute_airdrop") {
-        let airdrop_id: Int = 1; // Default airdrop ID
-        let top_scorer_count: Int = 10; // Default counts
-        let streak_winner_count: Int = 5;
-        
-        // Validate we have enough in the pool
         require(self.airdrop_pool > 0, "No airdrop pool available");
-        
-        // Increment airdrop ID
-        self.airdrop_id = self.airdrop_id + 1;
-        
-        // Split airdrop pool 50/50
+
+        self.airdrop_id += 1;
         let half_pool: Int = self.airdrop_pool / 2;
-        
-        // Calculate amounts per winner
-        let top_scorer_amount: Int = 0;
-        let streak_winner_amount: Int = 0;
-        
-        if (top_scorer_count > 0) {
-            top_scorer_amount = half_pool / top_scorer_count;
-        }
-        
-        if (streak_winner_count > 0) {
-            streak_winner_amount = half_pool / streak_winner_count;
-        }
-        
-        // For text messages, we'll send to the sender as a demo
+
+        let top_scorer_count: Int = 10;
+        let streak_winner_count: Int = 5;
+
+        let top_scorer_amount: Int = (top_scorer_count > 0) ? (half_pool / top_scorer_count) : 0;
+        let streak_amount: Int = (streak_winner_count > 0) ? (half_pool / streak_winner_count) : 0;
+
         if (top_scorer_amount > 0) {
             send(SendParameters{
                 to: context().sender,
@@ -326,50 +276,30 @@ contract Treasury with Deployable {
                 bounce: false
             });
         }
-        
-        // Clear airdrop pool
+
         self.airdrop_pool = 0;
     }
-    
-    
-    // Getter functions exposed as methods
-    fun getOwner(): Address {
-        return self.owner;
-    }
-    
-    fun getUpgradeAuthority(): Address {
-        return self.upgrade_authority;
-    }
-    
-    fun getAirdropPool(): Int {
-        return self.airdrop_pool;
-    }
-    
-    fun getAirdropId(): Int {
-        return self.airdrop_id;
-    }
-    
-    fun getCurrentRoomId(): Int {
-        return self.current_room_id;
-    }
-    
-    fun getHouseFeeBps(): Int {
-        return self.HOUSE_FEE_BPS;
-    }
-    
-    fun getHouseFeeDenominator(): Int {
-        return self.HOUSE_FEE_DENOMINATOR;
-    }
-    
-    fun getRoomData(room_key: Int): RoomData? {
+
+    // =======================================================
+    //  Getters
+    // =======================================================
+    get fun getOwner(): Address { return self.owner; }
+    get fun getUpgradeAuthority(): Address { return self.upgrade_authority; }
+    get fun getAirdropPool(): Int { return self.airdrop_pool; }
+    get fun getAirdropId(): Int { return self.airdrop_id; }
+    get fun getCurrentRoomId(): Int { return self.current_room_id; }
+    get fun getHouseFeeBps(): Int { return self.HOUSE_FEE_BPS; }
+    get fun getHouseFeeDenominator(): Int { return self.HOUSE_FEE_DENOMINATOR; }
+
+    get fun getRoomData(room_key: Int): RoomData? {
         return self.rooms.get(room_key);
     }
-    
-    fun getWinnerReward(room_key: Int, winner_address: Address): Int? {
-        return self.winner_rewards.get(winner_address);
+
+    get fun getWinnerReward(_: Int, addr: Address): Int? {
+        return self.winner_rewards.get(addr);
     }
-    
-    fun getClaimedReward(room_key: Int, winner_address: Address): Int? {
-        return self.claimed_rewards.get(winner_address);
+
+    get fun getClaimedReward(_: Int, addr: Address): Int? {
+        return self.claimed_rewards.get(addr);
     }
 }

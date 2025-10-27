@@ -19,7 +19,7 @@ export async function run(provider: NetworkProvider) {
     console.log('Network: testnet')
     
     // Configure specific addresses for owner and upgrade authority
-    const ownerAddress = Address.parse("0QDOoeBGMtBp576nfJoEDAb6fVzBai0FxDBMTl6cv2tBvtzk"); // Your new owner wallet
+    const ownerAddress = Address.parse("0QCkNwCfxQEvHvR_TC3aQ-SUbARbxKBefiA9IDBRBlrOePcz"); // Owner wallet
     const upgradeAuthorityAddress = deployer; // Use deployer as upgrade authority to ensure new contract address
     
     // Create Treasury contract

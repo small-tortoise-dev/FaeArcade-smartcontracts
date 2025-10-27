@@ -23,17 +23,14 @@ int __tact_dict_get_slice_int(cell d, int kl, slice k, int vl) inline;
 ;; __tact_dict_set_slice_int
 (cell, ()) __tact_dict_set_slice_int(cell d, int kl, slice k, int v, int vl) inline;
 
+;; __tact_dict_get_int_slice
+slice __tact_dict_get_int_slice(cell d, int kl, int k) inline;
+
 ;; __tact_dict_get_int_cell
 cell __tact_dict_get_int_cell(cell d, int kl, int k) inline;
 
 ;; __tact_dict_set_int_cell
 (cell, ()) __tact_dict_set_int_cell(cell d, int kl, int k, cell v) inline;
-
-;; $DeployOk$_store
-builder $DeployOk$_store(builder build_0, (int) v) inline;
-
-;; $DeployOk$_store_cell
-cell $DeployOk$_store_cell((int) v, builder b) inline;
 
 ;; $RoomData$_store
 builder $RoomData$_store(builder build_0, (int, int, int, int, int, int, int, int) v) inline;
@@ -59,11 +56,17 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
 ;; $Context$_get_value
 _ $Context$_get_value((int, slice, int, slice) v) inline;
 
-;; $Context$_get_raw
-_ $Context$_get_raw((int, slice, int, slice) v) inline;
-
 ;; $RoomData$_not_null
 ((int, int, int, int, int, int, int, int)) $RoomData$_not_null(tuple v) inline;
+
+;; $RoomData$_to_tuple
+tuple $RoomData$_to_tuple(((int, int, int, int, int, int, int, int)) v) inline;
+
+;; $RoomData$_to_opt_tuple
+tuple $RoomData$_to_opt_tuple(tuple v) inline;
+
+;; $RoomData$_to_opt_external
+tuple $RoomData$_to_opt_external(tuple v) inline;
 
 ;; $Treasury$init$_load
 (slice, ((slice, slice))) $Treasury$init$_load(slice sc_0) inline;
@@ -77,14 +80,35 @@ _ $Context$_get_raw((int, slice, int, slice) v) inline;
 ;; $Treasury$_contract_store
 () $Treasury$_contract_store((slice, slice, int, int, cell, int, cell, cell, int, int) v) impure inline;
 
-;; $MessageParameters$_constructor_bounce_to_value_mode_body
-((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline;
+;; $Treasury$_fun_getOwner
+((slice, slice, int, int, cell, int, cell, cell, int, int), slice) $Treasury$_fun_getOwner((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref;
 
-;; $Treasury$_fun_notify
-((slice, slice, int, int, cell, int, cell, cell, int, int), ()) $Treasury$_fun_notify((slice, slice, int, int, cell, int, cell, cell, int, int) $self, cell $body) impure inline;
+;; $Treasury$_fun_getUpgradeAuthority
+((slice, slice, int, int, cell, int, cell, cell, int, int), slice) $Treasury$_fun_getUpgradeAuthority((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref;
 
-;; $DeployOk$_constructor_queryId
-((int)) $DeployOk$_constructor_queryId(int $queryId) inline;
+;; $Treasury$_fun_getAirdropPool
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getAirdropPool((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref;
+
+;; $Treasury$_fun_getAirdropId
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getAirdropId((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref;
+
+;; $Treasury$_fun_getCurrentRoomId
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getCurrentRoomId((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref;
+
+;; $Treasury$_fun_getHouseFeeBps
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getHouseFeeBps((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref;
+
+;; $Treasury$_fun_getHouseFeeDenominator
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getHouseFeeDenominator((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref;
+
+;; $Treasury$_fun_getRoomData
+((slice, slice, int, int, cell, int, cell, cell, int, int), tuple) $Treasury$_fun_getRoomData((slice, slice, int, int, cell, int, cell, cell, int, int) $self, int $room_key) impure inline_ref;
+
+;; $Treasury$_fun_getWinnerReward
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getWinnerReward((slice, slice, int, int, cell, int, cell, cell, int, int) $self, int _0, slice $addr) impure inline_ref;
+
+;; $Treasury$_fun_getClaimedReward
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getClaimedReward((slice, slice, int, int, cell, int, cell, cell, int, int) $self, int _0, slice $addr) impure inline_ref;
 
 ;; $RoomData$_constructor_entry_fee_winners_count_status_pool_total_entries_paid_hash_created_at_closed_at
 ((int, int, int, int, int, int, int, int)) $RoomData$_constructor_entry_fee_winners_count_status_pool_total_entries_paid_hash_created_at_closed_at(int $entry_fee, int $winners_count, int $status, int $pool, int $total_entries, int $paid_hash, int $created_at, int $closed_at) inline;
@@ -145,6 +169,15 @@ int __tact_dict_get_slice_int(cell d, int kl, slice k, int vl) inline {
     }
 }
 
+slice __tact_dict_get_int_slice(cell d, int kl, int k) inline {
+    var (r, ok) = idict_get?(d, kl, k);
+    if (ok) {
+        return r;
+    } else {
+        return null();
+    }
+}
+
 cell __tact_dict_get_int_cell(cell d, int kl, int k) inline {
     var (r, ok) = idict_get_ref?(d, kl, k);
     if (ok) {
@@ -162,34 +195,6 @@ cell __tact_dict_get_int_cell(cell d, int kl, int k) inline {
         return (idict_set_ref(d, kl, k, v), ());
     }
 }
-
-int $global_myBalance() impure asm """
-    BALANCE FIRST
-""";
-
-() $global_nativeReserve(int $amount, int $mode) impure asm """
-    RAWRESERVE
-""";
-
-() $global_message((int, cell, int, slice, int) $params) impure asm """
-    NEWC
-    b{01} STSLICECONST  // store tag = $0 and ihr_disabled = true
-    1 STI               // store `bounce`
-    b{000} STSLICECONST // store bounced = false and src = addr_none
-    STSLICE             // store `to`
-    SWAP
-    STGRAMS             // store `value`
-    106 PUSHINT         // 1 + 4 + 4 + 64 + 32 + 1
-    STZEROES
-    // → Stack state
-    // s0: Builder
-    // s1: `body`
-    // s2: `mode`
-    STDICT
-    ENDC
-    SWAP
-    SENDRAWMSG
-""";
 
 () $global_send((int, cell, cell, cell, int, slice, int) $params) impure asm """
     NEWC
@@ -270,39 +275,6 @@ int $global_now() impure asm """
     NOW
 """;
 
-(slice, ()) $Slice$_fun_skipRef(slice $self) impure asm """
-    LDREF NIP
-""";
-
-(slice, int) $Slice$_fun_loadCoins(slice $self) impure asm( -> 1 0) """
-    LDVARUINT16
-""";
-
-(slice, ()) $Slice$_fun_skipBits(slice $self, int $l) impure asm """
-    SDSKIPFIRST
-""";
-
-(slice, slice) $Slice$_fun_loadAddress(slice $self) impure asm( -> 1 0) """
-    LDMSGADDR
-""";
-
-((slice, slice, int, int, cell, int, cell, cell, int, int), ()) $Treasury$_fun_notify((slice, slice, int, int, cell, int, cell, cell, int, int) $self, cell $body) impure inline {
-    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
-    slice $to = __tact_context_get_sender();
-    int $bounce = false;
-    if (false) {
-        int $balance = $global_myBalance();
-        int $balanceBeforeMessage = ($balance - $Context$_get_value(__tact_context_get()));
-        if (($balanceBeforeMessage < 0)) {
-            $global_nativeReserve(0, 0);
-            $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 130, $body));
-            return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), ());
-        }
-    }
-    $global_message($MessageParameters$_constructor_bounce_to_value_mode_body($bounce, $to, 0, 66, $body));
-    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), ());
-}
-
 ;; Treasury.tact_Treasury.constants.fc
 ;; Cell bRqN7k0qGwJjaSIcBXCboVhmxcO0veRIzAxKjoQgKk8=
 cell __gen_cell_cell_6d1a8dee4d2a1b026369221c05709ba15866c5c3b4bde448cc0c4a8e84202a4f() asm """
@@ -330,11 +302,6 @@ _ $Context$_get_value((int, slice, int, slice) v) inline {
     return v'value;
 }
 
-_ $Context$_get_raw((int, slice, int, slice) v) inline {
-    var (v'bounceable, v'sender, v'value, v'raw) = v;
-    return v'raw;
-}
-
 ;;
 ;; Type: SendParameters
 ;; TLB: _ mode:int257 body:Maybe ^cell code:Maybe ^cell data:Maybe ^cell value:int257 to:address bounce:bool = SendParameters
@@ -342,36 +309,6 @@ _ $Context$_get_raw((int, slice, int, slice) v) inline {
 
 ((int, cell, cell, cell, int, slice, int)) $SendParameters$_constructor_to_value_body_bounce(slice $to, int $value, cell $body, int $bounce) inline {
     return (0, $body, null(), null(), $value, $to, $bounce);
-}
-
-;;
-;; Type: MessageParameters
-;; TLB: _ mode:int257 body:Maybe ^cell value:int257 to:address bounce:bool = MessageParameters
-;;
-
-((int, cell, int, slice, int)) $MessageParameters$_constructor_bounce_to_value_mode_body(int $bounce, slice $to, int $value, int $mode, cell $body) inline {
-    return ($mode, $body, $value, $to, $bounce);
-}
-
-;;
-;; Type: DeployOk
-;; Header: 0xaff90f57
-;; TLB: deploy_ok#aff90f57 queryId:uint64 = DeployOk
-;;
-
-builder $DeployOk$_store(builder build_0, (int) v) inline {
-    var (v'queryId) = v;
-    build_0 = store_uint(build_0, 2952335191, 32);
-    build_0 = build_0.store_uint(v'queryId, 64);
-    return build_0;
-}
-
-cell $DeployOk$_store_cell((int) v, builder b) inline {
-    return $DeployOk$_store(b, v).end_cell();
-}
-
-((int)) $DeployOk$_constructor_queryId(int $queryId) inline {
-    return ($queryId);
 }
 
 ;;
@@ -431,6 +368,25 @@ tuple $RoomData$_load_opt(cell cl) inline {
     throw_if(128, null?(v));
     var (int vvv'entry_fee, int vvv'winners_count, int vvv'status, int vvv'pool, int vvv'total_entries, int vvv'paid_hash, int vvv'created_at, int vvv'closed_at) = __tact_tuple_destroy_8(v);
     return (vvv'entry_fee, vvv'winners_count, vvv'status, vvv'pool, vvv'total_entries, vvv'paid_hash, vvv'created_at, vvv'closed_at);
+}
+
+tuple $RoomData$_to_tuple(((int, int, int, int, int, int, int, int)) v) inline {
+    var (v'entry_fee, v'winners_count, v'status, v'pool, v'total_entries, v'paid_hash, v'created_at, v'closed_at) = v;
+    return __tact_tuple_create_8(v'entry_fee, v'winners_count, v'status, v'pool, v'total_entries, v'paid_hash, v'created_at, v'closed_at);
+}
+
+tuple $RoomData$_to_opt_tuple(tuple v) inline {
+    if (null?(v)) { return null(); } 
+    return $RoomData$_to_tuple($RoomData$_not_null(v)); 
+}
+
+tuple $RoomData$_to_opt_external(tuple v) inline {
+    var loaded = $RoomData$_to_opt_tuple(v);
+    if (null?(loaded)) {
+        return null();
+    } else {
+        return (loaded);
+    }
 }
 
 ((int, int, int, int, int, int, int, int)) $RoomData$_constructor_entry_fee_winners_count_status_pool_total_entries_paid_hash_created_at_closed_at(int $entry_fee, int $winners_count, int $status, int $pool, int $total_entries, int $paid_hash, int $created_at, int $closed_at) inline {
@@ -517,9 +473,134 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
     return ($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR);
 }
 
+((slice, slice, int, int, cell, int, cell, cell, int, int), slice) $Treasury$_fun_getOwner((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
+    var $fresh$ret_0 = $self'owner;
+    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_0);
+}
+
+((slice, slice, int, int, cell, int, cell, cell, int, int), slice) $Treasury$_fun_getUpgradeAuthority((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
+    var $fresh$ret_1 = $self'upgrade_authority;
+    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_1);
+}
+
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getAirdropPool((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
+    var $fresh$ret_2 = $self'airdrop_pool;
+    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_2);
+}
+
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getAirdropId((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
+    var $fresh$ret_3 = $self'airdrop_id;
+    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_3);
+}
+
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getCurrentRoomId((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
+    var $fresh$ret_4 = $self'current_room_id;
+    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_4);
+}
+
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getHouseFeeBps((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
+    var $fresh$ret_5 = $self'HOUSE_FEE_BPS;
+    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_5);
+}
+
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getHouseFeeDenominator((slice, slice, int, int, cell, int, cell, cell, int, int) $self) impure inline_ref {
+    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
+    var $fresh$ret_6 = $self'HOUSE_FEE_DENOMINATOR;
+    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_6);
+}
+
+((slice, slice, int, int, cell, int, cell, cell, int, int), tuple) $Treasury$_fun_getRoomData((slice, slice, int, int, cell, int, cell, cell, int, int) $self, int $room_key) impure inline_ref {
+    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
+    var $fresh$ret_7 = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
+    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_7);
+}
+
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getWinnerReward((slice, slice, int, int, cell, int, cell, cell, int, int) $self, int _0, slice $addr) impure inline_ref {
+    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
+    var $fresh$ret_8 = __tact_dict_get_slice_int($self'winner_rewards, 267, $addr, 257);
+    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_8);
+}
+
+((slice, slice, int, int, cell, int, cell, cell, int, int), int) $Treasury$_fun_getClaimedReward((slice, slice, int, int, cell, int, cell, cell, int, int) $self, int _0, slice $addr) impure inline_ref {
+    var (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)) = $self;
+    var $fresh$ret_9 = __tact_dict_get_slice_int($self'claimed_rewards, 267, $addr, 257);
+    return (($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR), $fresh$ret_9);
+}
+
 ;;
 ;; Get methods of a Contract Treasury
 ;;
+
+_ %getOwner() method_id(102025) {
+    var self = $Treasury$_contract_load();
+    var res = self~$Treasury$_fun_getOwner();
+    return res;
+}
+
+_ %getUpgradeAuthority() method_id(130873) {
+    var self = $Treasury$_contract_load();
+    var res = self~$Treasury$_fun_getUpgradeAuthority();
+    return res;
+}
+
+_ %getAirdropPool() method_id(94920) {
+    var self = $Treasury$_contract_load();
+    var res = self~$Treasury$_fun_getAirdropPool();
+    return res;
+}
+
+_ %getAirdropId() method_id(124041) {
+    var self = $Treasury$_contract_load();
+    var res = self~$Treasury$_fun_getAirdropId();
+    return res;
+}
+
+_ %getCurrentRoomId() method_id(80378) {
+    var self = $Treasury$_contract_load();
+    var res = self~$Treasury$_fun_getCurrentRoomId();
+    return res;
+}
+
+_ %getHouseFeeBps() method_id(123079) {
+    var self = $Treasury$_contract_load();
+    var res = self~$Treasury$_fun_getHouseFeeBps();
+    return res;
+}
+
+_ %getHouseFeeDenominator() method_id(71484) {
+    var self = $Treasury$_contract_load();
+    var res = self~$Treasury$_fun_getHouseFeeDenominator();
+    return res;
+}
+
+_ %getRoomData(int $room_key) method_id(71393) {
+    int $room_key = $room_key;
+    var self = $Treasury$_contract_load();
+    var res = self~$Treasury$_fun_getRoomData($room_key);
+    return $RoomData$_to_opt_external(res);
+}
+
+_ %getWinnerReward(int $_, slice $addr) method_id(68060) {
+    int $_ = $_;
+    slice $addr = $addr;
+    var self = $Treasury$_contract_load();
+    var res = self~$Treasury$_fun_getWinnerReward($_, $addr);
+    return res;
+}
+
+_ %getClaimedReward(int $_, slice $addr) method_id(125005) {
+    int $_ = $_;
+    slice $addr = $addr;
+    var self = $Treasury$_contract_load();
+    var res = self~$Treasury$_fun_getClaimedReward($_, $addr);
+    return res;
+}
 
 ;;
 ;; Routing of a Contract Treasury
@@ -549,161 +630,149 @@ builder $Treasury$_store(builder build_0, (slice, slice, int, int, cell, int, ce
     int in_msg_length = slice_bits(in_msg);
     if (in_msg_length >= 32) {
         op = in_msg~load_uint(32);
-        ;; Receive Deploy message
-        if (op == 0x946a98b6) {
-            var $deploy'queryId = in_msg~load_uint(64);
-            ($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR)~$Treasury$_fun_notify($DeployOk$_store_cell($DeployOk$_constructor_queryId($deploy'queryId), begin_cell()));
+        ;; Receive OpenRoom message
+        if (op == 2616294104) {
+            var $msg'room_key = in_msg~load_uint(32);
+            var $msg'entry_fee = in_msg~load_varuint16();
+            var $msg'winners_count = in_msg~load_uint(8);
+            throw_unless(2493, ($msg'entry_fee > 0));
+            throw_unless(39893, ($msg'winners_count > 0));
+            throw_unless(14506, ($msg'winners_count <= 1000));
+            throw_unless(40266, ($msg'room_key > 0));
+            tuple $existing_room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $msg'room_key));
+            throw_unless(27407, null?($existing_room));
+            var ($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at) = $RoomData$_constructor_entry_fee_winners_count_status_pool_total_entries_paid_hash_created_at_closed_at($msg'entry_fee, $msg'winners_count, 1, 0, 0, 0, $global_now(), 0);
+            $self'rooms~__tact_dict_set_int_cell(257, $msg'room_key, $RoomData$_store_cell(($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at), begin_cell()));
+            $self'current_room_id = $msg'room_key;
+            $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
+            return ();
+        }
+        
+        ;; Receive EnterRoom message
+        if (op == 1380690280) {
+            var $msg'room_key = in_msg~load_uint(32);
+            var $msg'entry_fee = in_msg~load_varuint16();
+            tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $msg'room_key));
+            throw_unless(20618, (~ null?($room)));
+            var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
+            throw_unless(5883, ($room_data'status == 1));
+            throw_unless(58501, ($room_data'entry_fee == $msg'entry_fee));
+            int $actual_entry_fee = $room_data'entry_fee;
+            int $received = $Context$_get_value(__tact_context_get());
+            throw_unless(51351, ($received == $actual_entry_fee));
+            int $house_fee = (($actual_entry_fee * $self'HOUSE_FEE_BPS) / $self'HOUSE_FEE_DENOMINATOR);
+            int $pool_contribution = ($actual_entry_fee - $house_fee);
+            $room_data'pool = $room_data'pool + $pool_contribution;
+            $room_data'total_entries = $room_data'total_entries + 1;
+            $self'rooms~__tact_dict_set_int_cell(257, $msg'room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
+            if (($house_fee > 0)) {
+                $global_send($SendParameters$_constructor_to_value_body_bounce($self'owner, $house_fee, __gen_cell_cell_6d1a8dee4d2a1b026369221c05709ba15866c5c3b4bde448cc0c4a8e84202a4f(), false));
+            }
+            $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
+            return ();
+        }
+        
+        ;; Receive CloseRoom message
+        if (op == 2943936156) {
+            var $msg'room_key = in_msg~load_uint(32);
+            tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $msg'room_key));
+            throw_unless(14103, (~ null?($room)));
+            var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
+            throw_unless(5883, ($room_data'status == 1));
+            $room_data'status = 0;
+            $room_data'closed_at = $global_now();
+            $self'rooms~__tact_dict_set_int_cell(257, $msg'room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
+            $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
+            return ();
+        }
+        
+        ;; Receive DistributePayouts message
+        if (op == 3561099507) {
+            var $msg'room_key = in_msg~load_uint(32);
+            var $msg'winners_count = in_msg~load_uint(8);
+            var $msg'winners = in_msg~load_dict();
+            tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $msg'room_key));
+            throw_unless(14103, (~ null?($room)));
+            var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
+            throw_unless(50845, ($room_data'status == 0));
+            throw_unless(16751, ($room_data'paid_hash == 0));
+            throw_unless(62631, ($msg'winners_count == $room_data'winners_count));
+            int $remaining_pool = $room_data'pool;
+            int $per_winner = ($remaining_pool / $msg'winners_count);
+            int $i = 0;
+            repeat ($msg'winners_count) {
+                slice $winner_address = __tact_dict_get_int_slice($msg'winners, 257, $i);
+                if ((~ null?($winner_address))) {
+                    $self'winner_rewards~__tact_dict_set_slice_int(267, __tact_not_null($winner_address), $per_winner, 257);
+                }
+                $i = $i + 1;
+            }
+            $room_data'status = 2;
+            $room_data'paid_hash = $global_now();
+            $self'rooms~__tact_dict_set_int_cell(257, $msg'room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
+            $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
+            return ();
+        }
+        
+        ;; Receive ClaimReward message
+        if (op == 3468397897) {
+            var $msg'room_key = in_msg~load_uint(32);
+            var $msg'winner_address = in_msg~load_msg_addr();
+            tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $msg'room_key));
+            throw_unless(14103, (~ null?($room)));
+            var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
+            throw_unless(10215, ($room_data'status == 2));
+            int $reward_amount = __tact_dict_get_slice_int($self'winner_rewards, 267, $msg'winner_address, 257);
+            throw_unless(6225, (~ null?($reward_amount)));
+            int $already_claimed = 0;
+            int $claimed = __tact_dict_get_slice_int($self'claimed_rewards, 267, $msg'winner_address, 257);
+            if ((~ null?($claimed))) {
+                $already_claimed = __tact_not_null($claimed);
+            }
+            int $remaining = (__tact_not_null($reward_amount) - $already_claimed);
+            throw_unless(43137, ($remaining > 0));
+            $global_send($SendParameters$_constructor_to_value_body_bounce($msg'winner_address, $remaining, __gen_cell_cell_5b750024b7f8b026923d47702314a84adbeeba56e4fe4d0a81176f84cffdacbb(), false));
+            $self'claimed_rewards~__tact_dict_set_slice_int(267, $msg'winner_address, ($already_claimed + $remaining), 257);
             $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
             return ();
         }
         
     }
+    ;; Receive empty message
+    if ((op == 0) & (in_msg_length <= 32)) {
+        $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
+        return ();
+    }
     ;; Empty Receiver and Text Receivers
     var text_op = slice_hash(in_msg);
-    ;; Receive "open_room_params" message
-    if (text_op == 0xf7f7c1c7a35dbbe41cbb35aa7d13ae03739219b763f8529bf693dc57abfdbec3) {
-        slice $slice = $Context$_get_raw(__tact_context_get());
-        $slice~$Slice$_fun_skipBits(32);
-        $slice~$Slice$_fun_skipRef();
-        int $room_key = $slice~load_uint(32);
-        int $entry_fee = $slice~$Slice$_fun_loadCoins();
-        int $winners_count = $slice~load_uint(8);
-        throw_unless(2493, ($entry_fee > 0));
-        throw_unless(39893, ($winners_count > 0));
-        throw_unless(14506, ($winners_count <= 1000));
-        throw_unless(40266, ($room_key > 0));
-        tuple $existing_room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
-        throw_unless(27407, null?($existing_room));
-        var ($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at) = $RoomData$_constructor_entry_fee_winners_count_status_pool_total_entries_paid_hash_created_at_closed_at($entry_fee, $winners_count, 1, 0, 0, 0, $global_now(), 0);
-        $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($new_room'entry_fee, $new_room'winners_count, $new_room'status, $new_room'pool, $new_room'total_entries, $new_room'paid_hash, $new_room'created_at, $new_room'closed_at), begin_cell()));
-        $self'current_room_id = $room_key;
-        $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
-        return ();
-    }
-    ;; Receive "enter_room_params" message
-    if (text_op == 0x23918e6c7fc5497b05e31986ff583a99314910879bd1ccfe3a465e83c3aa8628) {
-        slice $slice = $Context$_get_raw(__tact_context_get());
-        $slice~$Slice$_fun_skipBits(32);
-        $slice~$Slice$_fun_skipRef();
-        int $room_key = $slice~load_uint(32);
-        int $expected_entry_fee = $slice~$Slice$_fun_loadCoins();
-        tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
-        throw_unless(20618, (~ null?($room)));
-        var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
-        throw_unless(5883, ($room_data'status == 1));
-        throw_unless(58501, ($room_data'entry_fee == $expected_entry_fee));
-        int $actual_entry_fee = $room_data'entry_fee;
-        int $received_amount = $Context$_get_value(__tact_context_get());
-        throw_unless(51351, ($received_amount == $actual_entry_fee));
-        int $house_fee = (($actual_entry_fee * $self'HOUSE_FEE_BPS) / $self'HOUSE_FEE_DENOMINATOR);
-        int $pool_contribution = ($actual_entry_fee - $house_fee);
-        $room_data'pool = ($room_data'pool + $pool_contribution);
-        $room_data'total_entries = ($room_data'total_entries + 1);
-        $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
-        if (($house_fee > 0)) {
-            $global_send($SendParameters$_constructor_to_value_body_bounce($self'owner, $house_fee, __gen_cell_cell_6d1a8dee4d2a1b026369221c05709ba15866c5c3b4bde448cc0c4a8e84202a4f(), false));
-        }
-        $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
-        return ();
-    }
-    ;; Receive "close_room_params" message
-    if (text_op == 0x78f481cc938c19046a2dbeed444b8cf7b65aa38154efdaef2a7d5dd15d2dab6c) {
-        slice $slice = $Context$_get_raw(__tact_context_get());
-        $slice~$Slice$_fun_skipBits(32);
-        $slice~$Slice$_fun_skipRef();
-        int $room_key = $slice~load_uint(32);
-        tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
-        throw_unless(14103, (~ null?($room)));
-        var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
-        throw_unless(5883, ($room_data'status == 1));
-        $room_data'status = 0;
-        $room_data'closed_at = $global_now();
-        $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
-        $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
-        return ();
-    }
-    ;; Receive "distribute_payouts_params" message
-    if (text_op == 0x3eefb0952b6918ad8b478603bade6f3639a4230c05b7f2e2282ffa77fede55e5) {
-        slice $slice = $Context$_get_raw(__tact_context_get());
-        $slice~$Slice$_fun_skipBits(32);
-        $slice~$Slice$_fun_skipRef();
-        int $room_key = $slice~load_uint(32);
-        int $winners_count = $slice~load_uint(8);
-        tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
-        throw_unless(14103, (~ null?($room)));
-        var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
-        throw_unless(50845, ($room_data'status == 0));
-        throw_unless(16751, ($room_data'paid_hash == 0));
-        throw_unless(62631, ($winners_count == $room_data'winners_count));
-        int $total_weight = (($winners_count * ($winners_count + 1)) / 2);
-        int $remaining_pool = $room_data'pool;
-        int $i = 0;
-        while (($i < $winners_count)) {
-            slice $winner_address = $slice~$Slice$_fun_loadAddress();
-            int $weight = ($winners_count - $i);
-            int $reward_amount = (($remaining_pool * $weight) / $total_weight);
-            $self'winner_rewards~__tact_dict_set_slice_int(267, $winner_address, $reward_amount, 257);
-            $i = ($i + 1);
-        }
-        $room_data'status = 2;
-        $room_data'paid_hash = $global_now();
-        $self'rooms~__tact_dict_set_int_cell(257, $room_key, $RoomData$_store_cell(($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at), begin_cell()));
-        $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
-        return ();
-    }
-    ;; Receive "claim_reward_params" message
-    if (text_op == 0x98e91200d96b01eb7c70c724a4d16a71e36dd0752ec2220accce37d2ea4be77c) {
-        slice $slice = $Context$_get_raw(__tact_context_get());
-        $slice~$Slice$_fun_skipBits(32);
-        $slice~$Slice$_fun_skipRef();
-        int $room_key = $slice~load_uint(32);
-        slice $winner_address = $slice~$Slice$_fun_loadAddress();
-        tuple $room = $RoomData$_load_opt(__tact_dict_get_int_cell($self'rooms, 257, $room_key));
-        throw_unless(14103, (~ null?($room)));
-        var ($room_data'entry_fee, $room_data'winners_count, $room_data'status, $room_data'pool, $room_data'total_entries, $room_data'paid_hash, $room_data'created_at, $room_data'closed_at) = $RoomData$_not_null($room);
-        throw_unless(10215, ($room_data'status == 2));
-        int $reward_amount = __tact_dict_get_slice_int($self'winner_rewards, 267, $winner_address, 257);
-        throw_unless(6225, (~ null?($reward_amount)));
-        int $already_claimed = 0;
-        int $claimed_amount = __tact_dict_get_slice_int($self'claimed_rewards, 267, $winner_address, 257);
-        if ((~ null?($claimed_amount))) {
-            $already_claimed = __tact_not_null($claimed_amount);
-        }
-        int $remaining_reward = (__tact_not_null($reward_amount) - $already_claimed);
-        throw_unless(43137, ($remaining_reward > 0));
-        $global_send($SendParameters$_constructor_to_value_body_bounce($winner_address, $remaining_reward, __gen_cell_cell_5b750024b7f8b026923d47702314a84adbeeba56e4fe4d0a81176f84cffdacbb(), false));
-        $self'claimed_rewards~__tact_dict_set_slice_int(267, $winner_address, ($already_claimed + $remaining_reward), 257);
-        $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
-        return ();
-    }
     ;; Receive "fund_airdrop" message
     if (text_op == 0xae1f55287d6c4d2042cc5941a8a23c971d49bf5e554d4fa78ae730638e083cb7) {
-        $self'airdrop_pool = ($self'airdrop_pool + $Context$_get_value(__tact_context_get()));
+        $self'airdrop_pool = $self'airdrop_pool + $Context$_get_value(__tact_context_get());
         $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
         return ();
     }
     ;; Receive "distribute_airdrop" message
     if (text_op == 0x7e9a4e9c4db87f8cc634e496e2f129f07172c3894b3498755d7d69745e4ba895) {
-        int $airdrop_id = 1;
+        throw_unless(49080, ($self'airdrop_pool > 0));
+        $self'airdrop_id = $self'airdrop_id + 1;
+        int $half_pool = ($self'airdrop_pool / 2);
         int $top_scorer_count = 10;
         int $streak_winner_count = 5;
-        throw_unless(49080, ($self'airdrop_pool > 0));
-        $self'airdrop_id = ($self'airdrop_id + 1);
-        int $half_pool = ($self'airdrop_pool / 2);
-        int $top_scorer_amount = 0;
-        int $streak_winner_amount = 0;
-        if (($top_scorer_count > 0)) {
-            $top_scorer_amount = ($half_pool / $top_scorer_count);
-        }
-        if (($streak_winner_count > 0)) {
-            $streak_winner_amount = ($half_pool / $streak_winner_count);
-        }
+        int $top_scorer_amount = (($top_scorer_count > 0) ? ($half_pool / $top_scorer_count) : 0);
+        int $streak_amount = (($streak_winner_count > 0) ? ($half_pool / $streak_winner_count) : 0);
         if (($top_scorer_amount > 0)) {
             $global_send($SendParameters$_constructor_to_value_body_bounce(__tact_context_get_sender(), $top_scorer_amount, __gen_cell_cell_05c7735d515d1aea0a143ed0596b84bd0b47fee238b45aaeebc95d1f754b9295(), false));
         }
         $self'airdrop_pool = 0;
         $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
         return ();
+    }
+    if (op == 0) {
+        ;; Fallback Text Receiver
+        if (in_msg_length >= 32) {
+            $Treasury$_contract_store(($self'owner, $self'upgrade_authority, $self'airdrop_pool, $self'airdrop_id, $self'rooms, $self'current_room_id, $self'winner_rewards, $self'claimed_rewards, $self'HOUSE_FEE_BPS, $self'HOUSE_FEE_DENOMINATOR));
+            return ();
+        }
     }
     ;; Throw if not handled
     throw(130);

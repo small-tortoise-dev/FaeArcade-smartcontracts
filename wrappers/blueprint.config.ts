@@ -1,6 +1,5 @@
-import { Blueprint } from '@ton/blueprint'
-
-export const config: Blueprint = {
+// Blueprint configuration for TON smart contracts
+export const config = {
   contracts: {
     Treasury: {
       path: '../contracts/Treasury.tact',

@@ -10,6 +10,7 @@
     "deploy:mainnet": "tsx scripts/deploy.ts --network mainnet",
     "deploy:upgradable": "tsx scripts/deploy-upgradable.ts",
     "check:status": "tsx scripts/check-status.ts",
+    "verify:ready": "tsx scripts/verify-deployment-ready.ts",
     "script": "tsx",
     "clean": "rimraf build dist"
   },
@@ -28,6 +29,7 @@
   "dependencies": {
     "@tact-lang/compiler": "^1.6.13",
     "buffer": "^6.0.3",
+    "tact": "^0.1.0",
     "ton-core": "^0.53.0",
     "vite-plugin-node-polyfills": "^0.24.0"
   },

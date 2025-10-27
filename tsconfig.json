@@ -20,7 +20,7 @@
       "@scripts/*": ["./scripts/*"],
       "@tests/*": ["./tests/*"]
     },
-    "types": ["node", "vitest/globals"]
+    "types": ["node"]
   },
   "include": [
     "scripts/**/*",
