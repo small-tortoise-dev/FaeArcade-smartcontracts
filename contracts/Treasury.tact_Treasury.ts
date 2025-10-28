@@ -714,7 +714,7 @@ export function storeOpenRoom(src: OpenRoom) {
         const b_0 = builder;
         b_0.storeUint(2616294104, 32);
         b_0.storeUint(src.room_key, 32);
-        b_0.storeVarUint(src.entry_fee, 16);  // Contract expects varuint16
+        b_0.storeCoins(src.entry_fee);
         b_0.storeUint(src.winners_count, 8);
     };
 }
@@ -723,7 +723,7 @@ export function loadOpenRoom(slice: Slice) {
     const sc_0 = slice;
     if (sc_0.loadUint(32) !== 2616294104) { throw Error('Invalid prefix'); }
     const _room_key = sc_0.loadUintBig(32);
-    const _entry_fee = sc_0.loadVarUintBig(16);  // Contract uses load_varuint16
+    const _entry_fee = sc_0.loadCoins();
     const _winners_count = sc_0.loadUintBig(8);
     return { $$type: 'OpenRoom' as const, room_key: _room_key, entry_fee: _entry_fee, winners_count: _winners_count };
 }
@@ -772,7 +772,7 @@ export function storeEnterRoom(src: EnterRoom) {
         const b_0 = builder;
         b_0.storeUint(1380690280, 32);
         b_0.storeUint(src.room_key, 32);
-        b_0.storeVarUint(src.entry_fee, 16);  // Contract expects varuint16
+        b_0.storeCoins(src.entry_fee);
     };
 }
 
@@ -780,7 +780,7 @@ export function loadEnterRoom(slice: Slice) {
     const sc_0 = slice;
     if (sc_0.loadUint(32) !== 1380690280) { throw Error('Invalid prefix'); }
     const _room_key = sc_0.loadUintBig(32);
-    const _entry_fee = sc_0.loadVarUintBig(16);  // Contract uses load_varuint16
+    const _entry_fee = sc_0.loadCoins();
     return { $$type: 'EnterRoom' as const, room_key: _room_key, entry_fee: _entry_fee };
 }
 

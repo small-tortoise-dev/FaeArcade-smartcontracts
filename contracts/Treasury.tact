@@ -13,7 +13,7 @@
 struct RoomData {
     entry_fee: Int;
     winners_count: Int;
-    status: Int;         // 0 = Closed, 1 = Open, 2 = Paid
+    status: Int; // 0 = Closed, 1 = Open, 2 = Paid
     pool: Int;
     total_entries: Int;
     paid_hash: Int;
@@ -43,7 +43,7 @@ message CloseRoom {
 message DistributePayouts {
     room_key: Int as uint32;
     winners_count: Int as uint8;
-    winners: map<Int, Address>;  // index -> winner address
+    winners: map<Int, Address>; // index -> winner address
 }
 
 message ClaimReward {
@@ -55,7 +55,6 @@ message ClaimReward {
 // Contract Definition
 // -------------------------------
 contract Treasury {
-
     // Persistent State
     owner: Address;
     upgrade_authority: Address;
@@ -69,11 +68,11 @@ contract Treasury {
     current_room_id: Int;
 
     // Winner tracking (pull-based)
-    winner_rewards: map<Address, Int>;  // Address -> reward amount
+    winner_rewards: map<Address, Int>; // Address -> reward amount
     claimed_rewards: map<Address, Int>; // Address -> total claimed
 
     // Constants
-    HOUSE_FEE_BPS: Int = 250;        // 2.5%
+    HOUSE_FEE_BPS: Int = 250; // 2.5%
     HOUSE_FEE_DENOMINATOR: Int = 10000;
 
     // -------------------------------
@@ -107,7 +106,7 @@ contract Treasury {
         require(existing_room == null, "Room already exists");
 
         // Create and save room
-        let new_room: RoomData = RoomData{
+        let new_room: RoomData = RoomData {
             entry_fee: msg.entry_fee,
             winners_count: msg.winners_count,
             status: 1, // Open
@@ -115,7 +114,7 @@ contract Treasury {
             total_entries: 0,
             paid_hash: 0,
             created_at: now(),
-            closed_at: 0
+            closed_at: 0,
         };
 
         self.rooms.set(msg.room_key, new_room);
@@ -150,11 +149,11 @@ contract Treasury {
 
         // Send house fee to owner
         if (house_fee > 0) {
-            send(SendParameters{
+            send(SendParameters {
                 to: self.owner,
                 value: house_fee,
                 body: "House Fee".asComment(),
-                bounce: false
+                bounce: false,
             });
         }
     }
@@ -226,11 +225,11 @@ contract Treasury {
         let remaining: Int = reward_amount!! - already_claimed;
         require(remaining > 0, "No remaining reward to claim");
 
-        send(SendParameters{
+        send(SendParameters {
             to: msg.winner_address,
             value: remaining,
             body: "Reward Claim".asComment(),
-            bounce: false
+            bounce: false,
         });
 
         self.claimed_rewards.set(msg.winner_address, already_claimed + remaining);
@@ -269,11 +268,11 @@ contract Treasury {
         let streak_amount: Int = (streak_winner_count > 0) ? (half_pool / streak_winner_count) : 0;
 
         if (top_scorer_amount > 0) {
-            send(SendParameters{
+            send(SendParameters {
                 to: context().sender,
                 value: top_scorer_amount,
                 body: "Top Scorer Airdrop".asComment(),
-                bounce: false
+                bounce: false,
             });
         }
 
@@ -283,13 +282,33 @@ contract Treasury {
     // =======================================================
     //  Getters
     // =======================================================
-    get fun getOwner(): Address { return self.owner; }
-    get fun getUpgradeAuthority(): Address { return self.upgrade_authority; }
-    get fun getAirdropPool(): Int { return self.airdrop_pool; }
-    get fun getAirdropId(): Int { return self.airdrop_id; }
-    get fun getCurrentRoomId(): Int { return self.current_room_id; }
-    get fun getHouseFeeBps(): Int { return self.HOUSE_FEE_BPS; }
-    get fun getHouseFeeDenominator(): Int { return self.HOUSE_FEE_DENOMINATOR; }
+    get fun getOwner(): Address {
+        return self.owner;
+    }
+
+    get fun getUpgradeAuthority(): Address {
+        return self.upgrade_authority;
+    }
+
+    get fun getAirdropPool(): Int {
+        return self.airdrop_pool;
+    }
+
+    get fun getAirdropId(): Int {
+        return self.airdrop_id;
+    }
+
+    get fun getCurrentRoomId(): Int {
+        return self.current_room_id;
+    }
+
+    get fun getHouseFeeBps(): Int {
+        return self.HOUSE_FEE_BPS;
+    }
+
+    get fun getHouseFeeDenominator(): Int {
+        return self.HOUSE_FEE_DENOMINATOR;
+    }
 
     get fun getRoomData(room_key: Int): RoomData? {
         return self.rooms.get(room_key);

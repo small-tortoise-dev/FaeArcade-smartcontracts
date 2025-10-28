@@ -1,6 +1,6 @@
 # Tact compilation report
 Contract: Treasury
-BoC Size: 2456 bytes
+BoC Size: 3401 bytes
 
 ## Structures (Structs and Messages)
 Total structures: 17
@@ -45,36 +45,68 @@ Signature: `VarAddress{workchain:int32,address:^slice}`
 TL-B: `_ hash:Maybe int257 = BasechainAddress`
 Signature: `BasechainAddress{hash:Maybe int257}`
 
-### Deploy
-TL-B: `deploy#946a98b6 queryId:uint64 = Deploy`
-Signature: `Deploy{queryId:uint64}`
-
-### DeployOk
-TL-B: `deploy_ok#aff90f57 queryId:uint64 = DeployOk`
-Signature: `DeployOk{queryId:uint64}`
-
-### FactoryDeploy
-TL-B: `factory_deploy#6d0ff13b queryId:uint64 cashback:address = FactoryDeploy`
-Signature: `FactoryDeploy{queryId:uint64,cashback:address}`
-
 ### RoomData
 TL-B: `_ entry_fee:int257 winners_count:int257 status:int257 pool:int257 total_entries:int257 paid_hash:int257 created_at:int257 closed_at:int257 = RoomData`
 Signature: `RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}`
 
-### OpenRoomMessage
-TL-B: `_ room_key:int257 entry_fee:int257 winners_count:int257 = OpenRoomMessage`
-Signature: `OpenRoomMessage{room_key:int257,entry_fee:int257,winners_count:int257}`
+### OpenRoom
+TL-B: `open_room#9bf17ad8 room_key:uint32 entry_fee:coins winners_count:uint8 = OpenRoom`
+Signature: `OpenRoom{room_key:uint32,entry_fee:coins,winners_count:uint8}`
 
-### EnterRoomMessage
-TL-B: `_ room_key:int257 entry_fee:int257 = EnterRoomMessage`
-Signature: `EnterRoomMessage{room_key:int257,entry_fee:int257}`
+### EnterRoom
+TL-B: `enter_room#524ba968 room_key:uint32 entry_fee:coins = EnterRoom`
+Signature: `EnterRoom{room_key:uint32,entry_fee:coins}`
+
+### CloseRoom
+TL-B: `close_room#af78e69c room_key:uint32 = CloseRoom`
+Signature: `CloseRoom{room_key:uint32}`
+
+### DistributePayouts
+TL-B: `distribute_payouts#d44210f3 room_key:uint32 winners_count:uint8 winners:dict<int, address> = DistributePayouts`
+Signature: `DistributePayouts{room_key:uint32,winners_count:uint8,winners:dict<int, address>}`
+
+### ClaimReward
+TL-B: `claim_reward#cebb8d49 room_key:uint32 winner_address:address = ClaimReward`
+Signature: `ClaimReward{room_key:uint32,winner_address:address}`
 
 ### Treasury$Data
 TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 airdrop_id:int257 rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}> current_room_id:int257 winner_rewards:dict<address, int> claimed_rewards:dict<address, int> HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 = Treasury`
 Signature: `Treasury{owner:address,upgrade_authority:address,airdrop_pool:int257,airdrop_id:int257,rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}>,current_room_id:int257,winner_rewards:dict<address, int>,claimed_rewards:dict<address, int>,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257}`
 
 ## Get methods
-Total get methods: 0
+Total get methods: 10
+
+## getOwner
+No arguments
+
+## getUpgradeAuthority
+No arguments
+
+## getAirdropPool
+No arguments
+
+## getAirdropId
+No arguments
+
+## getCurrentRoomId
+No arguments
+
+## getHouseFeeBps
+No arguments
+
+## getHouseFeeDenominator
+No arguments
+
+## getRoomData
+Argument: room_key
+
+## getWinnerReward
+Argument: _
+Argument: addr
+
+## getClaimedReward
+Argument: _
+Argument: addr
 
 ## Exit codes
 * 2: Stack underflow
@@ -137,8 +169,6 @@ Total get methods: 0
 graph TD
 Treasury
 Treasury --> BaseTrait
-Treasury --> Deployable
-Deployable --> BaseTrait
 ```
 
 ## Contract dependency diagram
