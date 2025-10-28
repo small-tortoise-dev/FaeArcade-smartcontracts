@@ -32,8 +32,8 @@ export async function run(provider: NetworkProvider) {
     
     console.log('\n🚀 Deploying contract...')
     
-    // Deploy with 1.1 TON
-    await provider.deploy(treasury, toNano('1.1'))
+    // Deploy with 0.5 TON
+    await provider.deploy(treasury, toNano('0.5'))
     
     console.log('✅ Deployment transaction sent!')
     console.log('⏳ Waiting for confirmation...')

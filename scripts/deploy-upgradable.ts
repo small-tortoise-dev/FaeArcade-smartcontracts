@@ -98,7 +98,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
       console.log('Init code size:', treasury.init.code.bits.length, 'bits')
       
       // Deploy with Blueprint - it should use the init from the Treasury object
-      await provider.deploy(treasury, toNano('2'))
+      await provider.deploy(treasury, toNano('0.5'))
       
       console.log('Waiting for deployment confirmation...')
       await provider.waitForDeploy(treasury.address)
@@ -224,7 +224,7 @@ export async function run(provider: NetworkProvider, args: string[]) {
     console.log('Init code size:', treasury.init.code.bits.length, 'bits')
     
     try {
-      await provider.deploy(treasury, toNano('2'))
+      await provider.deploy(treasury, toNano('0.5'))
     } catch (deployError: any) {
       if (deployError.message.includes('already deployed')) {
         console.log('\n⚠️  Contract address already exists and is deployed')
