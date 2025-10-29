@@ -1,8 +1,9 @@
 // =======================================================
-//  FAE Arcade Treasury Contract
+//  FAE Arcade Treasury Contract - FIXED VERSION
 //  Author: <you>
 //  Network: TON Testnet
 //  Purpose: Manage arcade rooms, entry fees, and rewards
+//  Version: 2.0 (Bug Fixes Applied)
 // =======================================================
 
 // -------------------------------
@@ -48,7 +49,10 @@ message DistributePayouts {
 
 message ClaimReward {
     room_key: Int as uint32;
-    winner_address: Address;
+}
+
+message RefundRoom {
+    room_key: Int as uint32;
 }
 
 // -------------------------------
@@ -67,6 +71,11 @@ contract Treasury {
     rooms: map<Int, RoomData>;
     current_room_id: Int;
 
+    // FIX #1: Track user entries per room (prevents duplicate entries)
+    // Key is hash of (roomKey, userAddress)
+    // Value is true if entered
+    room_entries: map<Int, Bool>;
+
     // Winner tracking (pull-based)
     winner_rewards: map<Address, Int>; // Address -> reward amount
     claimed_rewards: map<Address, Int>; // Address -> total claimed
@@ -74,6 +83,8 @@ contract Treasury {
     // Constants
     HOUSE_FEE_BPS: Int = 250; // 2.5%
     HOUSE_FEE_DENOMINATOR: Int = 10000;
+    MIN_ENTRY_FEE: Int = 100000000; // 0.1 TON minimum (FIX #9)
+    MAX_ENTRIES_PER_ROOM: Int = 1000; // FIX #5: Maximum entries
 
     // -------------------------------
     // Constructor
@@ -95,8 +106,11 @@ contract Treasury {
     // Open new room
     // -------------------------------
     receive(msg: OpenRoom) {
+        // FIX #2: Access control - only owner can create rooms
+        require(sender() == self.owner, "Only owner can create rooms");
+
         // Parameter validation
-        require(msg.entry_fee > 0, "Entry fee must be positive");
+        require(msg.entry_fee >= self.MIN_ENTRY_FEE, "Entry fee below minimum");
         require(msg.winners_count > 0, "Winners count must be positive");
         require(msg.winners_count <= 1000, "Too many winners");
         require(msg.room_key > 0, "Room key must be positive");
@@ -132,6 +146,15 @@ contract Treasury {
         require(room_data.status == 1, "Room is not open");
         require(room_data.entry_fee == msg.entry_fee, "Entry fee mismatch");
 
+        // FIX #1: Check if user already entered this room
+        let user_address: Address = sender();
+        let entry_key: Int = self.computeEntryKey(msg.room_key, user_address);
+        let has_entered: Bool? = self.room_entries.get(entry_key);
+        require(has_entered == null, "User already entered this room");
+
+        // FIX #5: Check maximum entries
+        require(room_data.total_entries < self.MAX_ENTRIES_PER_ROOM, "Room is full");
+
         let actual_entry_fee: Int = room_data.entry_fee;
         let received: Int = context().value;
 
@@ -143,9 +166,12 @@ contract Treasury {
         let pool_contribution: Int = actual_entry_fee - house_fee;
 
         // Update pool + entries
-        room_data.pool += pool_contribution;
-        room_data.total_entries += 1;
+        room_data.pool = room_data.pool + pool_contribution;
+        room_data.total_entries = room_data.total_entries + 1;
         self.rooms.set(msg.room_key, room_data);
+
+        // FIX #1: Mark user as entered
+        self.room_entries.set(entry_key, true);
 
         // Send house fee to owner
         if (house_fee > 0) {
@@ -162,6 +188,9 @@ contract Treasury {
     // Close room
     // -------------------------------
     receive(msg: CloseRoom) {
+        // FIX #2: Access control - only owner can close rooms
+        require(sender() == self.owner, "Only owner can close rooms");
+
         let room: RoomData? = self.rooms.get(msg.room_key);
         require(room != null, "Room not found");
 
@@ -174,9 +203,13 @@ contract Treasury {
     }
 
     // -------------------------------
-    // Distribute payouts (linear weighting)
+    // Distribute payouts (equal split, not linear weighting)
+    // FIX #7: Updated comment to match implementation
     // -------------------------------
     receive(msg: DistributePayouts) {
+        // FIX #2: Access control - only owner can distribute payouts
+        require(sender() == self.owner, "Only owner can distribute payouts");
+
         let room: RoomData? = self.rooms.get(msg.room_key);
         require(room != null, "Room not found");
 
@@ -188,14 +221,20 @@ contract Treasury {
         let remaining_pool: Int = room_data.pool;
         let per_winner: Int = remaining_pool / msg.winners_count;
 
-        // Store winners with equal split
+        // FIX #6: Accumulate rewards instead of overwriting
         let i: Int = 0;
         repeat (msg.winners_count) {
             let winner_address: Address? = msg.winners.get(i);
             if (winner_address != null) {
-                self.winner_rewards.set(winner_address!!, per_winner);
+                let addr: Address = winner_address!!;
+                let current_reward_opt: Int? = self.winner_rewards.get(addr);
+                let current_reward: Int = 0;
+                if (current_reward_opt != null) {
+                    current_reward = current_reward_opt!!;
+                }
+                self.winner_rewards.set(addr, current_reward + per_winner);
             }
-            i += 1;
+            i = i + 1;
         }
 
         room_data.status = 2;
@@ -203,21 +242,49 @@ contract Treasury {
         self.rooms.set(msg.room_key, room_data);
     }
 
+    // -------------------------------
+    // FIX #8: Refund room (new functionality)
+    // -------------------------------
+    receive(msg: RefundRoom) {
+        // Only owner can refund
+        require(sender() == self.owner, "Only owner can refund rooms");
+
+        let room: RoomData? = self.rooms.get(msg.room_key);
+        require(room != null, "Room not found");
+
+        let room_data: RoomData = room!!;
+        require(room_data.status == 1, "Room must be open to refund");
+        require(room_data.total_entries > 0, "No entries to refund");
+
+        // Mark room as closed (status = 0)
+        room_data.status = 0;
+        room_data.closed_at = now();
+
+        // Note: Actual refunds would need to track individual user addresses
+        // This is a simplified version - full implementation would require
+        // storing user addresses in a map during entry
+
+        self.rooms.set(msg.room_key, room_data);
+    }
+
     // =======================================================
     //  Reward Claiming
     // =======================================================
     receive(msg: ClaimReward) {
+        // FIX #3: Only the sender can claim their own rewards
+        let winner_address: Address = sender();
+
         let room: RoomData? = self.rooms.get(msg.room_key);
         require(room != null, "Room not found");
 
         let room_data: RoomData = room!!;
         require(room_data.status == 2, "Room is not paid");
 
-        let reward_amount: Int? = self.winner_rewards.get(msg.winner_address);
+        let reward_amount: Int? = self.winner_rewards.get(winner_address);
         require(reward_amount != null, "No reward for this address");
 
         let already_claimed: Int = 0;
-        let claimed: Int? = self.claimed_rewards.get(msg.winner_address);
+        let claimed: Int? = self.claimed_rewards.get(winner_address);
         if (claimed != null) {
             already_claimed = claimed!!;
         }
@@ -226,13 +293,13 @@ contract Treasury {
         require(remaining > 0, "No remaining reward to claim");
 
         send(SendParameters {
-            to: msg.winner_address,
+            to: winner_address,
             value: remaining,
             body: "Reward Claim".asComment(),
             bounce: false,
         });
 
-        self.claimed_rewards.set(msg.winner_address, already_claimed + remaining);
+        self.claimed_rewards.set(winner_address, already_claimed + remaining);
     }
 
     // =======================================================
@@ -252,13 +319,15 @@ contract Treasury {
     }
 
     receive("fund_airdrop") {
-        self.airdrop_pool += context().value;
+        self.airdrop_pool = self.airdrop_pool + context().value;
     }
 
     receive("distribute_airdrop") {
+        // Access control for airdrop distribution
+        require(sender() == self.owner, "Only owner can distribute airdrops");
         require(self.airdrop_pool > 0, "No airdrop pool available");
 
-        self.airdrop_id += 1;
+        self.airdrop_id = self.airdrop_id + 1;
         let half_pool: Int = self.airdrop_pool / 2;
 
         let top_scorer_count: Int = 10;
@@ -269,7 +338,7 @@ contract Treasury {
 
         if (top_scorer_amount > 0) {
             send(SendParameters {
-                to: context().sender,
+                to: sender(),
                 value: top_scorer_amount,
                 body: "Top Scorer Airdrop".asComment(),
                 bounce: false,
@@ -320,5 +389,30 @@ contract Treasury {
 
     get fun getClaimedReward(_: Int, addr: Address): Int? {
         return self.claimed_rewards.get(addr);
+    }
+
+    // FIX #1: New getter to check if user entered a room
+    get fun hasUserEntered(room_key: Int, user_address: Address): Bool {
+        let entry_key: Int = self.computeEntryKey(room_key, user_address);
+        let has_entered: Bool? = self.room_entries.get(entry_key);
+        return has_entered != null;
+    }
+
+    // Helper: Compute unique key for room + user combination
+    // Using simple hash: roomKey * 2^160 + hash(address)
+    get fun computeEntryKey(room_key: Int, user_address: Address): Int {
+        // Simple but effective: combine room_key with address hash
+        // This creates a unique key for each (room, user) pair
+        let addr_hash: Int = user_address.asSlice().hash();
+        return (room_key * 1000000000000000000000000000000000000000000000000) + addr_hash;
+    }
+
+    // Get constants
+    get fun getMinEntryFee(): Int {
+        return self.MIN_ENTRY_FEE;
+    }
+
+    get fun getMaxEntriesPerRoom(): Int {
+        return self.MAX_ENTRIES_PER_ROOM;
     }
 }

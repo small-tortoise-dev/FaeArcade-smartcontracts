@@ -1,9 +1,9 @@
 # Tact compilation report
 Contract: Treasury
-BoC Size: 3401 bytes
+BoC Size: 5000 bytes
 
 ## Structures (Structs and Messages)
-Total structures: 17
+Total structures: 18
 
 ### DataSize
 TL-B: `_ cells:int257 bits:int257 refs:int257 = DataSize`
@@ -66,15 +66,19 @@ TL-B: `distribute_payouts#d44210f3 room_key:uint32 winners_count:uint8 winners:d
 Signature: `DistributePayouts{room_key:uint32,winners_count:uint8,winners:dict<int, address>}`
 
 ### ClaimReward
-TL-B: `claim_reward#cebb8d49 room_key:uint32 winner_address:address = ClaimReward`
-Signature: `ClaimReward{room_key:uint32,winner_address:address}`
+TL-B: `claim_reward#528e70a5 room_key:uint32 = ClaimReward`
+Signature: `ClaimReward{room_key:uint32}`
+
+### RefundRoom
+TL-B: `refund_room#32af6377 room_key:uint32 = RefundRoom`
+Signature: `RefundRoom{room_key:uint32}`
 
 ### Treasury$Data
-TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 airdrop_id:int257 rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}> current_room_id:int257 winner_rewards:dict<address, int> claimed_rewards:dict<address, int> HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 = Treasury`
-Signature: `Treasury{owner:address,upgrade_authority:address,airdrop_pool:int257,airdrop_id:int257,rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}>,current_room_id:int257,winner_rewards:dict<address, int>,claimed_rewards:dict<address, int>,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257}`
+TL-B: `_ owner:address upgrade_authority:address airdrop_pool:int257 airdrop_id:int257 rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}> current_room_id:int257 room_entries:dict<int, bool> winner_rewards:dict<address, int> claimed_rewards:dict<address, int> HOUSE_FEE_BPS:int257 HOUSE_FEE_DENOMINATOR:int257 MIN_ENTRY_FEE:int257 MAX_ENTRIES_PER_ROOM:int257 = Treasury`
+Signature: `Treasury{owner:address,upgrade_authority:address,airdrop_pool:int257,airdrop_id:int257,rooms:dict<int, ^RoomData{entry_fee:int257,winners_count:int257,status:int257,pool:int257,total_entries:int257,paid_hash:int257,created_at:int257,closed_at:int257}>,current_room_id:int257,room_entries:dict<int, bool>,winner_rewards:dict<address, int>,claimed_rewards:dict<address, int>,HOUSE_FEE_BPS:int257,HOUSE_FEE_DENOMINATOR:int257,MIN_ENTRY_FEE:int257,MAX_ENTRIES_PER_ROOM:int257}`
 
 ## Get methods
-Total get methods: 10
+Total get methods: 14
 
 ## getOwner
 No arguments
@@ -107,6 +111,20 @@ Argument: addr
 ## getClaimedReward
 Argument: _
 Argument: addr
+
+## hasUserEntered
+Argument: room_key
+Argument: user_address
+
+## computeEntryKey
+Argument: room_key
+Argument: user_address
+
+## getMinEntryFee
+No arguments
+
+## getMaxEntriesPerRoom
+No arguments
 
 ## Exit codes
 * 2: Stack underflow
@@ -145,7 +163,6 @@ Argument: addr
 * 135: Code of a contract was not found
 * 136: Invalid standard address
 * 138: Not a basechain address
-* 2493: Entry fee must be positive
 * 5883: Room is not open
 * 6225: No reward for this address
 * 10215: Room is not paid
@@ -153,14 +170,24 @@ Argument: addr
 * 14506: Too many winners
 * 16751: Room already paid
 * 20618: Room does not exist
+* 24070: Only owner can refund rooms
+* 26225: No entries to refund
+* 26835: User already entered this room
 * 27407: Room already exists
 * 39893: Winners count must be positive
 * 40266: Room key must be positive
+* 41956: Entry fee below minimum
 * 43137: No remaining reward to claim
 * 49080: No airdrop pool available
 * 50845: Room is not closed
 * 51351: Entry fee must be exact amount
+* 52447: Only owner can create rooms
+* 55399: Only owner can close rooms
+* 56758: Room must be open to refund
 * 58501: Entry fee mismatch
+* 58627: Only owner can distribute airdrops
+* 60267: Only owner can distribute payouts
+* 62029: Room is full
 * 62631: Winners count mismatch
 
 ## Trait inheritance diagram

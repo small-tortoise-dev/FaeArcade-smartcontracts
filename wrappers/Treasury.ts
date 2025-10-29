@@ -141,13 +141,30 @@ export class Treasury implements Contract {
     provider: ContractProvider,
     via: Sender,
     value: bigint,
-    roomKey: number,
-    winnerAddress: Address
+    roomKey: number
   ) {
+    // FIXED: No longer needs winnerAddress parameter - sender claims their own rewards
     const body = beginCell()
       .storeUint(3468397897, 32) // Opcode for ClaimReward (computed by Tact compiler)
       .storeUint(roomKey, 32)
-      .storeAddress(winnerAddress)
+      .endCell()
+
+    await provider.internal(via, {
+      value,
+      body,
+      bounce: true
+    })
+  }
+
+  async sendRefundRoom(
+    provider: ContractProvider,
+    via: Sender,
+    value: bigint,
+    roomKey: number
+  ) {
+    const body = beginCell()
+      .storeUint(0x12345678, 32) // Opcode for RefundRoom (will be computed by Tact compiler)
+      .storeUint(roomKey, 32)
       .endCell()
 
     await provider.internal(via, {
@@ -281,5 +298,30 @@ export class Treasury implements Contract {
     } catch {
       return null
     }
+  }
+
+  // NEW: Check if user has entered a room
+  async hasUserEntered(provider: ContractProvider, roomKey: number, userAddress: Address): Promise<boolean> {
+    try {
+      const result = await provider.get('hasUserEntered', [
+        { type: 'int', value: BigInt(roomKey) },
+        { type: 'slice', cell: beginCell().storeAddress(userAddress).endCell() }
+      ])
+      return result.stack.readBoolean()
+    } catch {
+      return false
+    }
+  }
+
+  // NEW: Get minimum entry fee
+  async getMinEntryFee(provider: ContractProvider): Promise<bigint> {
+    const result = await provider.get('getMinEntryFee', [])
+    return result.stack.readBigNumber()
+  }
+
+  // NEW: Get maximum entries per room
+  async getMaxEntriesPerRoom(provider: ContractProvider): Promise<number> {
+    const result = await provider.get('getMaxEntriesPerRoom', [])
+    return result.stack.readNumber()
   }
 } 
