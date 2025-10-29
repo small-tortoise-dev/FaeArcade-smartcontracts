@@ -1,4 +1,4 @@
-import { toNano, Address, beginCell } from '@ton/core'
+import { toNano, Address } from '@ton/core'
 import { NetworkProvider } from '@ton/blueprint'
 import { Treasury } from '../wrappers/Treasury'
 
@@ -19,16 +19,32 @@ export async function run(provider: NetworkProvider) {
     console.log('Network: testnet')
     
     // Configure specific addresses for owner and upgrade authority
-    const ownerAddress = Address.parse("0QCkNwCfxQEvHvR_TC3aQ-SUbARbxKBefiA9IDBRBlrOePcz"); // Owner wallet
-    const upgradeAuthorityAddress = deployer; // Use deployer as upgrade authority to ensure new contract address
+    const ownerAddress = Address.parse("0QDOoeBGMtBp576nfJoEDAb6fVzBai0FxDBMTl6cv2tBvtzk"); // Owner wallet
+    const upgradeAuthorityAddress = Address.parse("0QDOoeBGMtBp576nfJoEDAb6fVzBai0FxDBMTl6cv2tBvtzk"); // Same as owner
     
-    // Create Treasury contract
+    // Use the wrapper's fromInit method - it handles init data correctly
+    console.log('\n🔧 Creating Treasury contract from init...')
     const treasury = await Treasury.fromInit(ownerAddress, upgradeAuthorityAddress)
     
     console.log('\n📋 Contract Configuration:')
     console.log('Owner:', ownerAddress.toString())
     console.log('Upgrade Authority:', upgradeAuthorityAddress.toString())
     console.log('Contract Address:', treasury.address.toString())
+    console.log('Init Code Size:', treasury.init?.code.bits.length || 0)
+    console.log('Init Data Size:', treasury.init?.data.bits.length || 0)
+    
+    // Verify init data
+    if (treasury.init) {
+      const dataSlice = treasury.init.data.beginParse()
+      try {
+        const testOwner = dataSlice.loadAddress()
+        console.log('✅ Owner in init data:', testOwner.toString())
+        const testAuth = dataSlice.loadAddress()
+        console.log('✅ Authority in init data:', testAuth.toString())
+      } catch (e) {
+        console.error('❌ Failed to parse init data:', e)
+      }
+    }
     
     console.log('\n🚀 Deploying contract...')
     

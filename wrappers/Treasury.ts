@@ -54,16 +54,18 @@ export class Treasury implements Contract {
       HOUSE_FEE_DENOMINATOR: 10000n
     }
     
-    const data = beginCell().store(storeTreasury$Data(initialState)).endCell()
+    const data = beginCell()
+    storeTreasury$Data(initialState)(data)  // Correct: call the store function on the builder
+    const dataCell = data.endCell()
     
     // Get the contract init from the generated contract
     const generatedInit = await TreasuryContract.init(owner, upgradeAuthority)
     const code = generatedInit.code
     
     // Calculate address from code + data
-    const address = contractAddress(0, { code, data })
+    const address = contractAddress(0, { code, data: dataCell })
     
-    return new Treasury(address, { code, data })
+    return new Treasury(address, { code, data: dataCell })
   }
 
   async sendOpenRoom(
@@ -77,7 +79,7 @@ export class Treasury implements Contract {
     const body = beginCell()
       .storeUint(2616294104, 32) // Opcode for OpenRoom (computed by Tact compiler)
       .storeUint(roomKey, 32)
-      .storeVarUint(entryFee, 16) // Contract expects varuint16, not coins
+      .storeCoins(entryFee) // storeCoins() = VarUInteger 16 format (correct!)
       .storeUint(winnersCount, 8)
       .endCell()
 
@@ -97,7 +99,7 @@ export class Treasury implements Contract {
     const body = beginCell()
       .storeUint(1380690280, 32) // Opcode for EnterRoom (computed by Tact compiler)
       .storeUint(roomKey, 32)
-      .storeVarUint(entryFee, 16) // Contract expects varuint16, not coins
+      .storeCoins(entryFee) // storeCoins() = VarUInteger 16 format (correct!)
       .endCell()
 
     await provider.internal(via, {
