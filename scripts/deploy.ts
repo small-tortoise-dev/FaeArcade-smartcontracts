@@ -19,8 +19,9 @@ export async function run(provider: NetworkProvider) {
     console.log('Network: testnet')
     
     // Configure specific addresses for owner and upgrade authority
-    const ownerAddress = Address.parse("0QDOoeBGMtBp576nfJoEDAb6fVzBai0FxDBMTl6cv2tBvtzk"); // Owner wallet
-    const upgradeAuthorityAddress = Address.parse("0QDOoeBGMtBp576nfJoEDAb6fVzBai0FxDBMTl6cv2tBvtzk"); // Same as owner
+    // Using deployer wallet as owner to get a different contract address
+    const ownerAddress = deployer; // Use deployer wallet
+    const upgradeAuthorityAddress = deployer; // Same as owner
     
     // Use the wrapper's fromInit method - it handles init data correctly
     console.log('\n🔧 Creating Treasury contract from init...')
