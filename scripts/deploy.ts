@@ -18,11 +18,14 @@ export async function run(provider: NetworkProvider) {
     console.log('Address:', deployer.toString())
     console.log('Network: testnet')
     
-    // Configure specific addresses for owner and upgrade authority
-    // IMPORTANT: Use your backend wallet address as owner
-    // Get it by running: WALLET_MNEMONIC="..." npx tsx scripts/get-wallet-address.ts
-    const ownerAddress = Address.parse(process.env.OWNER_ADDRESS || '0QDBW5JlyhP_OZ6evNGd42Ql4MmIFEvTlD_JagJizhwzbzfg')
-    const upgradeAuthorityAddress = Address.parse(process.env.OWNER_ADDRESS || '0QDBW5JlyhP_OZ6evNGd42Ql4MmIFEvTlD_JagJizhwzbzfg')
+    // IMPORTANT: Use deployer wallet as both owner and upgrade authority
+    // This ensures the wallet deploying the contract is also the owner
+    // Backend will use the same mnemonic, so backend wallet = contract owner
+    const ownerAddress = deployer
+    const upgradeAuthorityAddress = deployer
+    
+    console.log('\n🔐 Contract will be owned by deployer wallet')
+    console.log('This matches the backend wallet (same mnemonic)')
     
     // Use the wrapper's fromInit method - it handles init data correctly
     console.log('\n🔧 Creating Treasury contract from init...')
