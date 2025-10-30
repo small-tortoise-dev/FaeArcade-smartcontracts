@@ -11,6 +11,8 @@
     "deploy:upgradable": "tsx scripts/deploy-upgradable.ts",
     "check:status": "tsx scripts/check-status.ts",
     "verify:ready": "tsx scripts/verify-deployment-ready.ts",
+    "verify:wallet": "tsx scripts/verify-wallet.ts",
+    "test:versions": "tsx scripts/test-wallet-versions.ts",
     "script": "tsx",
     "clean": "rimraf build dist"
   },

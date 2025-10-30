@@ -1,31 +1,79 @@
-import { toNano, Address } from '@ton/core'
+import { toNano } from '@ton/core'
 import { NetworkProvider } from '@ton/blueprint'
 import { Treasury } from '../wrappers/Treasury'
+import { mnemonicToWalletKey } from '@ton/crypto'
+import { WalletContractV4 } from '@ton/ton'
 
 export async function run(provider: NetworkProvider) {
-  console.log('🚀 Deploying FAE Arcade Treasury Contract...')
-  console.log('=' .repeat(50))
+  console.log('🚀 Deploying FAE Arcade Treasury Contract with V4 Wallet...')
+  console.log('=' .repeat(70))
   
   try {
-    // Get deployer address
-    const deployerAddress = provider.sender().address
-    if (!deployerAddress) {
-      throw new Error('Wallet not connected')
+    // Read mnemonic from environment and create V4 wallet explicitly
+    // Support both MNEMONIC and WALLET_MNEMONIC for compatibility
+    const mnemonic = process.env.MNEMONIC || process.env.WALLET_MNEMONIC
+    if (!mnemonic) {
+      throw new Error('MNEMONIC or WALLET_MNEMONIC not found in .env file')
     }
-    const deployer = Address.parse(deployerAddress.toString())
+    
+    console.log('🔑 Loading V4 wallet from mnemonic...')
+    const mnemonicWords = mnemonic.split(' ')
+    
+    if (mnemonicWords.length !== 24) {
+      console.error(`❌ Invalid mnemonic: Expected 24 words, got ${mnemonicWords.length}`)
+      if (mnemonicWords[0].startsWith('"') || mnemonicWords[mnemonicWords.length - 1].endsWith('"')) {
+        console.error('⚠️  Detected quotes in mnemonic! Remove quotes from .env file.')
+      }
+      throw new Error('Invalid mnemonic format')
+    }
+    
+    const keyPair = await mnemonicToWalletKey(mnemonicWords)
+    const wallet = WalletContractV4.create({
+      workchain: 0,
+      publicKey: keyPair.publicKey
+    })
+    
+    const deployer = wallet.address
     
     console.log('✅ Wallet connected:')
-    console.log('Address:', deployer.toString())
+    console.log('Non-bounceable (0Q):', deployer.toString({ bounceable: false, testOnly: true }))
+    console.log('Bounceable (EQ):', deployer.toString({ bounceable: true }))
     console.log('Network: testnet')
     
-    // IMPORTANT: Use deployer wallet as both owner and upgrade authority
-    // This ensures the wallet deploying the contract is also the owner
-    // Backend will use the same mnemonic, so backend wallet = contract owner
+    // Verify this is the expected V4 wallet
+    const expectedWallet = '0QD8rnJi9nT0ITcjKUOkG5dBS4sdwHeB4SkUclXDAYV_JQiY'
+    const deployerNonBounceable = deployer.toString({ bounceable: false, testOnly: true })
+    
+    console.log('\n🔍 V4 Wallet Verification:')
+    console.log('Expected (backend V4):', expectedWallet)
+    console.log('Actual (deploy V4):   ', deployerNonBounceable)
+    
+    if (deployerNonBounceable === expectedWallet) {
+      console.log('✅ MATCH! This is the correct wallet (matches backend)')
+    } else {
+      console.log('⚠️  WARNING! Wallet mismatch detected!')
+      console.log('   Expected:', expectedWallet)
+      console.log('   Got:     ', deployerNonBounceable)
+      console.log('\n   This means:')
+      console.log('   - Wrong mnemonic in .env file, OR')
+      console.log('   - Quotes around mnemonic in .env file, OR')
+      console.log('   - Different mnemonic than backend uses')
+      console.log('\n   Backend will NOT be able to create rooms!')
+      console.log('\n   Press Ctrl+C to cancel deployment and fix .env file')
+      console.log('   Or wait 10 seconds to continue anyway...')
+      
+      // Wait 10 seconds to give user time to cancel
+      await new Promise(resolve => setTimeout(resolve, 10000))
+    }
+    
+    // IMPORTANT: Use V4 wallet as both owner and upgrade authority
+    // This ensures backend and contract use the SAME wallet version (V4)
+    // Backend uses WalletContractV4, so this deploy script must too
     const ownerAddress = deployer
     const upgradeAuthorityAddress = deployer
     
-    console.log('\n🔐 Contract will be owned by deployer wallet')
-    console.log('This matches the backend wallet (same mnemonic)')
+    console.log('\n🔐 Contract will be owned by V4 wallet')
+    console.log('This matches the backend wallet (same mnemonic + V4 version)')
     
     // Use the wrapper's fromInit method - it handles init data correctly
     console.log('\n🔧 Creating Treasury contract from init...')
